@@ -12,6 +12,14 @@ module.exports = (sequelize, DataTypes) => {
                 max: 5,
             },
         },
+        Username: {  // Store the reviewer's username
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        eventId: {  // Link review to an event
+            type: DataTypes.INTEGER,
+            allowNull: false,
+        },
     });
 
     return Reviews;
