@@ -4,17 +4,23 @@
   "private": true,
   "dependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "bootstrap": "^5.3.3",
     "cra-template": "1.2.0",
+    "formik": "^2.4.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-scripts": "5.0.1",
-    "web-vitals": "^4.2.4"
+    "react-router-dom": "^7.1.4",
+    "react-scripts": "^5.0.1",
+    "tough-cookie": "^5.1.0",
+    "web-vitals": "^4.2.4",
+    "yup": "^1.6.1"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "dev": "npm start"
   },
   "eslintConfig": {
     "extends": [
@@ -33,5 +39,12 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "html-webpack-plugin": "^5.6.3",
+    "semver": "^7.7.0",
+    "shell-quote": "^1.8.2",
+    "webpack": "^5.97.1",
+    "webpack-dev-middleware": "^7.4.2"
   }
 }

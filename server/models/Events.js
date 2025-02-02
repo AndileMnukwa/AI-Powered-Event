@@ -4,23 +4,23 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             allowNull: false,
         },
-        Date: {
+        location: {
             type: DataTypes.STRING,
             allowNull: false,
         },
-        Location: {
+        description: {
             type: DataTypes.STRING,
             allowNull: false,
         },
-        Description: {
-            type: DataTypes.STRING,
+        date: {
+            type: DataTypes.DATEONLY, // ✅ Make sure this is DATEONLY if you're sending 'YYYY-MM-DD'
             allowNull: false,
         },
-        Username: {
+        username: {
             type: DataTypes.STRING,
             allowNull: false,
-        },
-    })
+        }
+    });
 
-    return Events
-}
+    return Events;
+};
