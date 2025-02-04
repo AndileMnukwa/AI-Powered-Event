@@ -11,16 +11,15 @@ module.exports = (sequelize, DataTypes) => {
                 min: 1,
                 max: 5,
             },
-        },
-        Username: {  // Store the reviewer's username
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
-        eventId: {  // Link review to an event
-            type: DataTypes.INTEGER,
-            allowNull: false,
-        },
+        }
     });
+
+    Reviews.associate = (models) => {
+        Reviews.belongsTo(models.Events, {
+            foreignKey: "EventId",
+            onDelete: "CASCADE",
+        });
+    };
 
     return Reviews;
 };

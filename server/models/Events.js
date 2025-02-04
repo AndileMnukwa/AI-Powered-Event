@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
         },
         date: {
-            type: DataTypes.DATEONLY, // ✅ Make sure this is DATEONLY if you're sending 'YYYY-MM-DD'
+            type: DataTypes.DATEONLY,
             allowNull: false,
         },
         username: {
@@ -21,6 +21,14 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
         }
     });
+
+    // ✅ Association with Reviews
+    Events.associate = (models) => {
+        Events.hasMany(models.Reviews, {
+            foreignKey: "eventId",  // ✅ Must match Reviews model
+            onDelete: "CASCADE",
+        });
+    };
 
     return Events;
 };

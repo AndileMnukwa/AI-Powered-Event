@@ -14,10 +14,13 @@ const db = require("./models");
 const eventRouter = require('./routes/Events');
 app.use("/events", eventRouter); // Use eventRouter for routes starting with /events
 
+// Import your reviews router
+const reviewRouter = require('./routes/Reviews');
+app.use("/reviews", reviewRouter); // Use reviewRouter for routes starting with /reviews
+
 // Sync database and start the server
 db.sequelize.sync().then(() => {
   app.listen(3001, () => {
     console.log("Server running on port 3001");
   });
-  
 });
