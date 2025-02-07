@@ -18,6 +18,10 @@ app.use("/events", eventRouter); // Use eventRouter for routes starting with /ev
 const reviewRouter = require('./routes/Reviews');
 app.use("/reviews", reviewRouter); // Use reviewRouter for routes starting with /reviews
 
+// Import your users router
+const usersRouter = require('./routes/Users');
+app.use("/auth", usersRouter); // Use usersRouter for routes starting with /auth
+
 // Sync database and start the server
 db.sequelize.sync().then(() => {
   app.listen(3001, () => {

@@ -1,52 +1,73 @@
 const express = require("express");
 const router = express.Router();
-const { Reviews } = require("../models"); // ✅ Import the Reviews model
+const { Reviews } = require("../models");
+const { validateToken } = require("../middlewares/AuthMiddleware");
 
 // Fetch all reviews for a specific event
-router.get("/:eventId", async (req, res) => {
+router.get("/:id", async (req, res) => {
     try {
-        const eventId = req.params.eventId;
+        const eventId = parseInt(req.params.id, 10);
 
-        // Fetch reviews where EventId matches (ensure this matches your DB column name)
+        if (isNaN(eventId) || eventId <= 0) {
+            return res.status(400).json({ error: "Invalid event ID" });
+        }
+
         const reviews = await Reviews.findAll({
-            where: { EventId: eventId },
-            attributes: ["review_text", "rating", "createdAt"], // Fetch only required fields
+            where: { eventId },
+            attributes: ["id", "review_text", "rating", "username", "createdAt"],
+            order: [["createdAt", "DESC"]],
         });
 
-        if (reviews.length === 0) {
+        if (!reviews.length) {
             return res.status(404).json({ error: "No reviews found for this event" });
         }
 
         res.json(reviews);
     } catch (error) {
-        console.error("Error fetching reviews:", error);
-        res.status(500).json({ error: "Failed to fetch reviews" });
+        console.error("Database error:", error.message);
+        res.status(500).json({ error: "Internal server error" });
     }
 });
 
-// Post a new review
-router.post("/", async (req, res) => {
-    try {
-        const { review_text, rating, eventId } = req.body; // Ensure correct field name
 
-        // Validate required fields
-        if (!review_text || !rating || !eventId) {
-            return res.status(400).json({ error: "Missing required fields: review_text, rating, or eventId" });
+// Post a new review
+router.post("/", validateToken, async (req, res) => {
+    try {
+        const { review_text, rating, eventId } = req.body;
+        const userId = req.user.id;
+        const username = req.user.username; // Extract username from token
+
+        if (!review_text || !rating || !eventId || isNaN(eventId)) {
+            return res.status(400).json({ error: "Missing or invalid fields" });
         }
 
-        // Validate rating range
         if (rating < 1 || rating > 5) {
             return res.status(400).json({ error: "Rating must be between 1 and 5" });
         }
 
-        // Create the review
-        const newReview = await Reviews.create({ review_text, rating, EventId: eventId });
+        const existingReview = await Reviews.findOne({ where: { eventId, UserId: userId } });
 
-        res.status(201).json(newReview);
+        if (existingReview) {
+            return res.status(400).json({ error: "You have already reviewed this event." });
+        }
+
+        const newReview = await Reviews.create({
+            review_text,
+            rating,
+            eventId,
+            UserId: userId,
+            username, // Store the username in the database
+        });
+
+        return res.status(201).json({
+            message: "Review added successfully",
+            review: { id: newReview.id, review_text, rating, eventId, username },
+        });
     } catch (error) {
         console.error("Error adding review:", error);
-        res.status(500).json({ error: "Failed to add review" });
+        return res.status(500).json({ error: "There was an error adding your review. Please try again." });
     }
 });
+
 
 module.exports = router;

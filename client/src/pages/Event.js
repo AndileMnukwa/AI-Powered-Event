@@ -8,49 +8,64 @@ export default function Event() {
   const [eventData, setEventData] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [newReview, setNewReview] = useState("");
-  const [rating, setRating] = useState(0); // Start with 0 rating (unfilled stars)
-  const [loadingReviews, setLoadingReviews] = useState(true);
-  const [loadingEvent, setLoadingEvent] = useState(true);
+  const [rating, setRating] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Fetch event data
-    axios.get(`http://localhost:3001/events/${id}`)
+    let isMounted = true;
+
+    axios
+      .get(`http://localhost:3001/events/${id}`)
       .then((response) => {
-        console.log("Event Data:", response.data);
-        setEventData(response.data.event);
-        setLoadingEvent(false);
+        if (isMounted) {
+          setEventData(response.data.event || response.data);
+          setReviews(response.data.reviews || []);
+          setLoading(false);
+        }
       })
-      .catch((error) => {
-        console.error("Error fetching event:", error);
-        setLoadingEvent(false);
+      .catch(() => {
+        if (isMounted) {
+          setError("Failed to load event details.");
+          setLoading(false);
+        }
       });
 
-    // Fetch reviews
-    axios.get(`http://localhost:3001/reviews/${id}`)
-      .then((response) => {
-        setReviews(response.data);
-        setLoadingReviews(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching reviews:", error);
-        setLoadingReviews(false);
-      });
+    return () => {
+      isMounted = false; // Cleanup function
+    };
   }, [id]);
 
-  const handleStarClick = (index) => {
-    setRating(index); // Set rating based on clicked star index
-  };
-
   const addReview = () => {
-    if (!newReview.trim() || rating === 0) return;
+    if (!newReview.trim() || rating === 0) {
+      alert("Please provide both a review and a rating.");
+      return;
+    }
 
-    // Send the new review with rating and review text
-    axios.post("http://localhost:3001/reviews", { review_text: newReview, rating, eventId: id })
-    .then((response) => {
-        setReviews([...reviews, response.data]);
-        setNewReview("");
-        setRating(0);  // Reset rating to 0 after submitting
-        alert("Your review was added successfully!");
+    const accessToken = sessionStorage.getItem("accessToken");
+    console.log("Access Token:", accessToken);
+    if (!accessToken) {
+      alert("You must be logged in to add a review.");
+      return;
+    }
+
+    axios
+      .post(
+        "http://localhost:3001/reviews",
+        { review_text: newReview, rating, eventId: id },
+        { headers: {
+          Authorization: `Bearer ${accessToken}`,
+         } }
+      )
+      .then((response) => {
+        if (response.data.error) {
+          alert(response.data.error);
+        } else {
+          setReviews((prevReviews) => [...prevReviews, response.data.review]);
+          setNewReview("");
+          setRating(0);
+          alert("Your review was added successfully!");
+        }
       })
       .catch((error) => {
         console.error("Error adding review:", error);
@@ -58,14 +73,14 @@ export default function Event() {
       });
   };
 
-  if (loadingEvent) {
-    return <p className="text-center mt-5">Loading event details...</p>;
-  }
+
+
+  if (loading) return <p className="text-center mt-5">Loading event details...</p>;
+  if (error) return <p className="text-center mt-5 text-danger">{error}</p>;
 
   return (
     <div className="container mt-5">
       <div className="row">
-        {/* Event Details */}
         <div className="col-md-6">
           <div className="card text-center">
             <div className="card-header bg-primary text-white">Event Details</div>
@@ -80,7 +95,6 @@ export default function Event() {
           </div>
         </div>
 
-        {/* Review Section */}
         <div className="col-md-6">
           <div className="card text-center">
             <div className="card-header bg-success text-white">Reviews</div>
@@ -98,11 +112,11 @@ export default function Event() {
                     <span
                       key={index}
                       className={`star ${index <= rating ? "filled" : ""}`}
-                      onClick={() => handleStarClick(index)}
+                      onClick={() => setRating(index)}
                       style={{
                         fontSize: "1.5rem",
                         cursor: "pointer",
-                        color: index <= rating ? "gray" : "gold",
+                        color: index <= rating ? "gold" : "gray",
                       }}
                     >
                       ⭐
@@ -116,11 +130,10 @@ export default function Event() {
           </div>
 
           <div className="ListOfReviews mt-3">
-            {loadingReviews ? (
-              <p className="text-center">Loading reviews...</p>
-            ) : reviews.length > 0 ? (
+            {reviews.length > 0 ? (
               reviews.map((review, key) => (
                 <div key={key} className="alert alert-secondary">
+                  <p><strong>{review.username || "Anonymous"}</strong> wrote:</p>
                   <p>{review.review_text || "No review text available"}</p>
                   {review.rating ? (
                     <p>
