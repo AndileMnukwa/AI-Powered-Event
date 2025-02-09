@@ -42,8 +42,8 @@ export default function Event() {
       return;
     }
 
-    const accessToken = sessionStorage.getItem("accessToken");
-    console.log("Access Token:", accessToken);
+    const accessToken = localStorage.getItem("accessToken");
+    console.log("AccessToken:", accessToken);
     if (!accessToken) {
       alert("You must be logged in to add a review.");
       return;

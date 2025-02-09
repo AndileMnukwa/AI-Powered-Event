@@ -1,12 +1,15 @@
-import React, { useState } from "react";
+import React, { useContext, useState, } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useNavigate } from "react-router-dom";
+import {AuthContext} from '../helpers/AuthContext';
+
 
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState(null);
+  const { setAuthState } = useContext(AuthContext)
 
   const navigate = useNavigate();
 
@@ -19,8 +22,15 @@ function Login() {
       } else {
         setMessage({ text: "Login successful!", type: "success" });
 
-        // Store token in sessionStorage
-        sessionStorage.setItem("accessToken", data.token);
+        // Store token in localStorage
+        localStorage.setItem("accessToken", data.token);
+        console.log("Stored Token:", localStorage.getItem("accessToken"));
+        setAuthState(true);
+
+        // Update AuthContext
+      setAuthState({ auth: true, user: data.user });
+      console.log("AuthState Updated:", { auth: true, user: data.user }); // Debugging
+
 
         // Redirect user after successful login
         setTimeout(() => {

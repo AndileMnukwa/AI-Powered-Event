@@ -4,6 +4,7 @@ const { Users } = require("../models");
 const bcrypt = require("bcrypt");
 const { sign } = require("jsonwebtoken");
 require("dotenv").config();
+const { validateToken } = require('../middlewares/AuthMiddleware')
 
 const SECRET_KEY = process.env.JWT_SECRET || "defaultsecret";
 
@@ -60,5 +61,9 @@ router.post("/login", async (req, res) => {
         return sendError(res, 500, "Server error");
     }
 });
+
+router.get('/auth', validateToken, (req, res) => {
+    res.json(req.user)
+})
 
 module.exports = router;
