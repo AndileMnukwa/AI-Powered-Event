@@ -3,7 +3,8 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import "bootstrap/dist/css/bootstrap.min.css"; // ✅ Import Bootstrap CSS
+import "bootstrap/dist/css/bootstrap.min.css";
+import { FaCalendarAlt, FaMapMarkerAlt, FaUserAlt, FaFileAlt } from "react-icons/fa";
 
 function CreateEvent() {
   let navigate = useNavigate();
@@ -12,7 +13,7 @@ function CreateEvent() {
     title: "",
     location: "",
     description: "",
-    date: new Date().toISOString().split("T")[0], // ✅ Set default date properly
+    date: new Date().toISOString().split("T")[0],
     username: "",
   };
 
@@ -29,62 +30,80 @@ function CreateEvent() {
       .required("Username is required"),
   });
 
-  const onSubmit = (data) => {
-    console.log("Submitting Data:", data);
+  const onSubmit = (data, { setSubmitting }) => {
     axios
       .post("http://localhost:3001/events", data)
-      .then((response) => {
+      .then(() => {
         navigate("/");
       })
       .catch((error) => {
         console.error("Error:", error.response ? error.response.data : error.message);
+      })
+      .finally(() => {
+        setSubmitting(false);
       });
   };
 
   return (
-    <div className="container mt-5">
-      <div className="card shadow p-4">
-        <h2 className="text-center mb-4">Create Event</h2>
+    <div className="container d-flex justify-content-center align-items-center vh-100">
+      <div className="card shadow-lg p-5 w-100" style={{ maxWidth: "800px" }}>
+        <h2 className="text-center fw-bold mb-4">Create Event</h2>
+
         <Formik initialValues={initialValues} onSubmit={onSubmit} validationSchema={validationSchema}>
           {({ isSubmitting }) => (
             <Form>
-              {/* Title Field */}
-              <div className="mb-3">
+              {/* Title */}
+              <div className="mb-4">
                 <label className="form-label">Title</label>
-                <Field type="text" className="form-control" name="title" placeholder="Enter event title" />
-                <ErrorMessage name="title" component="div" className="text-danger" />
+                <div className="input-group">
+                  <span className="input-group-text"><FaFileAlt /></span>
+                  <Field type="text" className="form-control form-control-lg" name="title" placeholder="Enter event title" />
+                </div>
+                <ErrorMessage name="title" component="div" className="text-danger small" />
               </div>
 
-              {/* Location Field */}
-              <div className="mb-3">
+              {/* Location */}
+              <div className="mb-4">
                 <label className="form-label">Location</label>
-                <Field type="text" className="form-control" name="location" placeholder="Enter event location" />
-                <ErrorMessage name="location" component="div" className="text-danger" />
+                <div className="input-group">
+                  <span className="input-group-text"><FaMapMarkerAlt /></span>
+                  <Field type="text" className="form-control form-control-lg" name="location" placeholder="Enter event location" />
+                </div>
+                <ErrorMessage name="location" component="div" className="text-danger small" />
               </div>
 
-              {/* Description Field */}
-              <div className="mb-3">
+              {/* Description */}
+              <div className="mb-4">
                 <label className="form-label">Description</label>
-                <Field as="textarea" className="form-control" name="description" placeholder="Enter event description" />
-                <ErrorMessage name="description" component="div" className="text-danger" />
+                <div className="input-group">
+                  <span className="input-group-text"><FaFileAlt /></span>
+                  <Field as="textarea" className="form-control form-control-lg" name="description" placeholder="Enter event description" rows="3" />
+                </div>
+                <ErrorMessage name="description" component="div" className="text-danger small" />
               </div>
 
-              {/* Date Field */}
-              <div className="mb-3">
+              {/* Date */}
+              <div className="mb-4">
                 <label className="form-label">Date</label>
-                <Field type="date" className="form-control" name="date" />
-                <ErrorMessage name="date" component="div" className="text-danger" />
+                <div className="input-group">
+                  <span className="input-group-text"><FaCalendarAlt /></span>
+                  <Field type="date" className="form-control form-control-lg" name="date" />
+                </div>
+                <ErrorMessage name="date" component="div" className="text-danger small" />
               </div>
 
-              {/* Username Field */}
-              <div className="mb-3">
+              {/* Username */}
+              <div className="mb-4">
                 <label className="form-label">Username</label>
-                <Field type="text" className="form-control" name="username" placeholder="Enter username" />
-                <ErrorMessage name="username" component="div" className="text-danger" />
+                <div className="input-group">
+                  <span className="input-group-text"><FaUserAlt /></span>
+                  <Field type="text" className="form-control form-control-lg" name="username" placeholder="Enter username" />
+                </div>
+                <ErrorMessage name="username" component="div" className="text-danger small" />
               </div>
 
-              {/* Submit Button */}
-              <button type="submit" className="btn btn-primary w-100" disabled={isSubmitting}>
+              {/* Submit */}
+              <button type="submit" className="btn btn-primary w-100 btn-lg" disabled={isSubmitting}>
                 {isSubmitting ? "Creating..." : "Create Event"}
               </button>
             </Form>

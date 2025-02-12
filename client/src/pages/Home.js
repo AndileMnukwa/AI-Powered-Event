@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { Calendar } from "react-calendar";
-import "react-calendar/dist/Calendar.css"; // Ensure the calendar styles are imported
+import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap-icons/font/bootstrap-icons.min.css";
 
 export default function Home() {
   const [listOfEvents, setListOfEvents] = useState([]);
@@ -10,6 +12,7 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [dateSelected, setDateSelected] = useState(new Date());
+  const [visibleEvents, setVisibleEvents] = useState(4);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,86 +29,133 @@ export default function Home() {
       });
   }, []);
 
-  if (loading) {
-    return <p>Loading events...</p>;
-  }
+  if (loading) return <p>Loading events...</p>;
+  if (error) return <p className="text-danger">{error}</p>;
 
-  if (error) {
-    return (
-      <div>
-        <p className="text-danger">{error}</p>
-        <button onClick={() => window.location.reload()} className="btn btn-primary">
-          Retry
-        </button>
-      </div>
-    );
-  }
+  const today = new Date();
+  const upcomingEvents = listOfEvents.filter((event) => new Date(event.date) >= today);
+  const pastEvents = listOfEvents.filter((event) => new Date(event.date) < today);
 
-  // Filter events based on search query (by title or location)
-  const filteredEvents = listOfEvents.filter((event) => {
-    const title = event.title ? event.title.toLowerCase() : "";
-    const location = event.location ? event.location.toLowerCase() : "";
-    const query = searchQuery.toLowerCase();
+  const filteredEvents = upcomingEvents
+    .filter((event) =>
+      event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      event.location.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .slice(0, visibleEvents);
 
-    return title.includes(query) || location.includes(query);
-  });
-
-  // Handle date selection in the calendar
-  const handleDateChange = (date) => {
-    setDateSelected(date);
+  const loadMore = () => {
+    setVisibleEvents((prev) => prev + 4);
   };
 
   return (
-    <div className="container-fluid mt-4">
+    <div className="container mt-4">
       <div className="row">
-        {/* Left: Search Bar + Calendar */}
-        <div className="col-md-6 mb-4">
-          {/* Search Bar */}
+        {/* Left Column: Events List */}
+        <div className="col-md-8">
+          <h2 className="mb-3 text-success">Up<span className="text-danger">comi</span>ng Events</h2>
+          {filteredEvents.length === 0 ? (
+            <p>No upcoming events found.</p>
+          ) : (
+            <div className="row">
+              {filteredEvents.map((event) => (
+                <div className="col-md-6 mb-3" key={event.id}>
+                  <div
+                    className="card event-card"
+                    onClick={() => navigate(`/event/${event.id}`)}
+                    style={{ cursor: "pointer", maxWidth: "18rem" }}
+                  >
+                    <div className="card-header bg-success text-white">{event.title}</div>
+                    <div className="card-body bg-light">
+                      <p className="card-text text-center text-dark">
+                        <i className="bi bi-geo-alt-fill text-success"></i> <span className="fw-bold text-success">{event.location}</span>
+                      </p>
+                      <p className="card-text text-center text-dark">
+                        <i className="bi bi-person-fill"></i> {event.username}
+                      </p>
+                      <p className="card-text text-center text-dark">
+                        <i className="bi bi-calendar-event-fill"></i> {new Date(event.date).toDateString()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Past Events Section */}
+          <h3 className="mt-4 text-muted">Past Events</h3>
+          <div className="row">
+            {pastEvents.slice(0, visibleEvents).map((event) => (
+              <div className="col-md-6 mb-3" key={event.id}>
+                <div
+                  className="card event-card"
+                  onClick={() => navigate(`/event/${event.id}`)}
+                  style={{ cursor: "pointer", maxWidth: "18rem" }}
+                >
+                  <div className="card-header" style={{ backgroundColor: "#6c7b6d", color: "white" }}>
+                    {event.title}
+                  </div>
+                  <div className="card-body bg-light">
+                    <p className="card-text text-center text-dark">
+                      <i className="bi bi-geo-alt-fill text-success"></i> <span className="fw-bold text-success">{event.location}</span>
+                    </p>
+                    <p className="card-text text-center text-dark">
+                      <i className="bi bi-person-fill"></i> {event.username}
+                    </p>
+                    <p className="card-text text-center text-dark">
+                      <i className="bi bi-calendar-event-fill"></i> {new Date(event.date).toDateString()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Load More Button */}
+          {visibleEvents < upcomingEvents.length && (
+            <div className="text-center">
+              <button className="btn btn-success mt-3" onClick={loadMore}>
+                Load More
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Right Column: Search Bar & Calendar */}
+        <div className="col-md-4">
           <input
             type="text"
-            className="form-control"
-            placeholder="Search events by title or location"
+            className="form-control mb-3"
+            placeholder="Search events..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-  
-          {/* Calendar */}
-          <div className="mt-4">
-            <Calendar
-              onChange={handleDateChange}
-              value={dateSelected}
-              tileClassName={({ date, view }) => {
-                // Highlight the dates that have events
-                const eventDates = listOfEvents.map((event) => new Date(event.date).toDateString());
-                if (eventDates.includes(date.toDateString())) {
-                  return 'highlighted-date'; // Custom CSS class to highlight dates with events
-                }
-                return null;
-              }}
-            />
-          </div>
-        </div>
-  
-        {/* Middle: Events List */}
-        <div className="col-md-6 mb-4">
-          <h3 className="mb-4">Events</h3>
-          {filteredEvents.length === 0 ? (
-            <p>No events found.</p>
-          ) : (
-            filteredEvents.map((event) => (
-              <div
-                key={event.id}
-                className="event card mb-3"
-                onClick={() => navigate(`/event/${event.id}`)}
-                style={{ cursor: "pointer" }}  // Add pointer cursor to show it's clickable
-              >
-                <div className="card-body">
-                  <h5 className="card-title">{event.title}</h5>
-                  <p className="card-text">{event.location}</p>
-                </div>
-              </div>
-            ))
-          )}
+          <Calendar
+            onChange={setDateSelected}
+            value={dateSelected}
+            tileContent={({ date }) => {
+              const eventDates = listOfEvents.map((event) =>
+                new Date(event.date).toDateString()
+              );
+              return eventDates.includes(date.toDateString()) ? (
+                <div className="event-dot"></div>
+              ) : null;
+            }}
+          />
+          <h5 className="mt-3 text-success">Events on {dateSelected.toDateString()}</h5>
+          <ul className="list-group">
+            {listOfEvents
+              .filter((event) => new Date(event.date).toDateString() === dateSelected.toDateString())
+              .map((event) => (
+                <li
+                  key={event.id}
+                  className="list-group-item list-group-item-action"
+                  onClick={() => navigate(`/event/${event.id}`)}
+                >
+                  {event.title}
+                </li>
+              ))}
+          </ul>
         </div>
       </div>
     </div>

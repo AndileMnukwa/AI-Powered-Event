@@ -3,6 +3,7 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { FaUser, FaLock } from "react-icons/fa"; // Importing icons from react-icons
 
 function Registration() {
   const [successMessage, setSuccessMessage] = useState("");
@@ -50,16 +51,36 @@ function Registration() {
           {({ isSubmitting }) => (
             <Form>
               {/* Username Field */}
-              <div className="mb-3">
+              <div className="mb-3 position-relative">
                 <label className="form-label">Username</label>
-                <Field type="text" className="form-control" name="username" placeholder="Enter username" />
+                <div className="input-group">
+                  <span className="input-group-text">
+                    <FaUser />
+                  </span>
+                  <Field
+                    type="text"
+                    className="form-control"
+                    name="username"
+                    placeholder="Enter username"
+                  />
+                </div>
                 <ErrorMessage name="username" component="div" className="text-danger" />
               </div>
 
               {/* Password Field */}
-              <div className="mb-3">
+              <div className="mb-3 position-relative">
                 <label className="form-label">Password</label>
-                <Field type="password" className="form-control" name="password" placeholder="Enter password" />
+                <div className="input-group">
+                  <span className="input-group-text">
+                    <FaLock />
+                  </span>
+                  <Field
+                    type="password"
+                    className="form-control"
+                    name="password"
+                    placeholder="Enter password"
+                  />
+                </div>
                 <ErrorMessage name="password" component="div" className="text-danger" />
               </div>
 

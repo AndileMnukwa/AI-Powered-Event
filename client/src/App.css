@@ -1,134 +1,83 @@
-/* Global Reset */
-*, :after, :before {
-  -webkit-box-sizing: inherit;
-  box-sizing: inherit;
-}
-
+/* General Page Styles */
 body {
-  margin: 0;
-  padding: 0;
-  font-family: BlinkMacSystemFont, -apple-system, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  color: #4a4a4a;
-  line-height: 1.5;
-  background-color: #fff;
-  text-rendering: optimizeLegibility;
-  min-width: 300px;
-  overflow-x: hidden;
-  overflow-y: scroll;
-  -webkit-text-size-adjust: 100%;
-  -moz-text-size-adjust: 100%;
-  -ms-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-}
-
-html {
-  font-size: 16px;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* Container for Flex Layout */
-.container-fluid {
-  padding: 0 15px;
-}
-
-/* Left: Search Bar */
-.form-control {
-  width: 100%;
-  padding: 10px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-/* Middle: Events List */
-.event {
-  cursor: pointer;
-  transition: transform 0.2s ease;
-  padding: 5px;
-  border-radius: 8px;
+  font-family: Arial, 'Times New Roman', Times, serif;
   background-color: #f8f9fa;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 15px;
-  border: 1px solid #eee;
-}
-
-.event:hover {
-  transform: scale(1.05);
-  background-color: #e9ecef;
-}
-
-.card-title {
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: #033b74;
-}
-
-.card-text {
-  font-size: 1rem;
-  color: #6c757d;
-}
-
-/* Right: Calendar */
-.react-calendar {
-  width: 100%;
-  max-width: 350px;
-}
-
-.react-calendar__tile {
-  border-radius: 5px;
-  padding: 5px;
-}
-
-.react-calendar__tile--now {
-  background-color: #007bff;
-  color: white;
-}
-
-/* Highlight event dates with yellow dots */
-.react-calendar__tile {
-  position: relative;
-}
-
-.highlighted-date {
-  background-color: #fff;
-}
-
-.highlighted-date::after {
-  content: '';
-  position: absolute;
-  bottom: 4px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 6px;
-  height: 6px;
-  background-color: yellow;
-  border-radius: 50%;
-}
-
-/* App Layout */
-.App {
-  width: 100vw;
-  height: auto;
+  margin: 0;
+  padding-top: 70px; /* Adjust for fixed navbar */
   display: flex;
-  align-items: center;
-  padding-top: 40px;
   flex-direction: column;
+  align-items: center;
 }
 
-/* Responsive Styles */
-@media screen and (max-width: 767px) {
-  .row {
-    display: block;
-    padding: 0 15px;
-  }
+/* Navbar Styles */
+.navbar {
+  background-color: #34495e !important; /* Dark blue-grey */
+  padding: 7px 70px;
+  position: fixed;
+  top: 40px;
+  width: 100%; /* Full width */
+  z-index: 1000;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 0x; /* Remove rounded corners for full width */
+}
 
-  .col-md-3, .col-md-6 {
-    padding: 0;
-  }
+/* Navbar Content Alignment */
+.navbar-nav {
+  margin: auto;
+}
 
-  .form-control {
-    margin-bottom: 20px;
-  }
+.nav-item .nav-link {
+  color: white !important;
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-align: center;
+  transition: color 0.3s ease-in-out;
+}
+
+.nav-item .nav-link:hover {
+  text-decoration: underline;
+  color: #ff0033;
+}
+
+/* Home Page Container */
+.container.mt-4 {
+  margin-top: 80px; /* Adjust for navbar height */
+  padding-top: 20px;
+  background-image: url('./images/event.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  /* min-height: 100vh; */
+  width: 100%; /* Full width */
+  max-width: 1200px; /* Keep content centered */
+  position: relative;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+  border-radius: 8px; /* Optional */
+}
+
+/* Dark Overlay for Text Readability */
+.container.mt-4::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Dark overlay */
+  z-index: 0;
+}
+
+.container.mt-4 > * {
+  position: relative;
+  z-index: 1;
+}
+.container {
+  max-width: 1200px !important; /* Force full width */
+}
+
+.card {
+  width: 100% !important;
+  max-width: 900px; /* Ensure proper size */
+  margin: auto;
 }
