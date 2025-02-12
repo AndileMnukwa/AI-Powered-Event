@@ -1,24 +1,32 @@
 const { verify } = require("jsonwebtoken");
 
 const validateToken = (req, res, next) => {
-    const accessToken = req.header("Authorization")?.split(" ")[1]; // Extract Bearer token
+    const authHeader = req.header("Authorization");
 
-    if (!accessToken) {
-        return res.status(401).json({ error: "User not authenticated" });
+    if (!authHeader) {
+        return res.status(401).json({ error: "Authorization header missing" });
+    }
+
+    const token = authHeader.split(" ")[1]; // Extract token from "Bearer <token>"
+
+    if (!token) {
+        return res.status(401).json({ error: "Token missing from authorization header" });
     }
 
     try {
-        const validToken = verify(accessToken, process.env.JWT_SECRET || "defaultsecret");
+        const validToken = verify(token, process.env.JWT_SECRET); // Use env variable for security
+        req.user = validToken; // Attach decoded token data to request
 
-        if (!validToken.id) {
-            return res.status(403).json({ error: "Invalid token payload" });
+        console.log("Decoded Token:", validToken);
+
+        if (!req.user.username || !req.user.id) {
+            return res.status(401).json({ error: "Invalid token: Missing username or user ID" });
         }
 
-        req.user = validToken; // Attach user info
-        console.log("User verified:", req.user); // Logging to ensure user is set
         return next();
     } catch (err) {
-        return res.status(403).json({ error: "Token is not valid" });
+        console.error("JWT Verification Error:", err.message);
+        return res.status(403).json({ error: "Invalid or expired token" });
     }
 };
 

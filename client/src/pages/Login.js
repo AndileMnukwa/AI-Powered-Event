@@ -1,16 +1,14 @@
-import React, { useContext, useState, } from "react";
+import React, { useContext, useState } from "react";
 import axios from "axios";
-import "bootstrap/dist/css/bootstrap.min.css";
 import { useNavigate } from "react-router-dom";
-import {AuthContext} from '../helpers/AuthContext';
-
+import { AuthContext } from "../helpers/AuthContext";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState(null);
-  const { setAuthState } = useContext(AuthContext)
-
+  const { setAuthState } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const login = async () => {
@@ -22,23 +20,31 @@ function Login() {
       } else {
         setMessage({ text: "Login successful!", type: "success" });
 
-        // Store token in localStorage
+        // ✅ Store token in localStorage
         localStorage.setItem("accessToken", data.token);
-        console.log("Stored Token:", localStorage.getItem("accessToken"));
-        setAuthState(true);
 
-        // Update AuthContext
-      setAuthState({ auth: true, user: data.user });
-      console.log("AuthState Updated:", { auth: true, user: data.user }); // Debugging
+        // ✅ Extract username from the response
+        const loggedInUser = data.username || username; // Fallback to input username
 
+        // ✅ Update AuthContext correctly
+        setAuthState({
+          username: loggedInUser,
+          id: data.id,
+          status: true,
+        });
 
-        // Redirect user after successful login
+        console.log("AuthState Updated:", {
+          username: loggedInUser,
+          id: data.id,
+          status: true,
+        });
+
         setTimeout(() => {
-          navigate("/"); // Change to your protected route
+          navigate("/");
         }, 1000);
       }
     } catch (error) {
-      setMessage({ text: "Incorrect Credentials, please try again later.", type: "danger" });
+      setMessage({ text: "Incorrect Credentials, please try again.", type: "danger" });
       console.error("Login error:", error);
     }
   };

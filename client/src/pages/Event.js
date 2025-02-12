@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { AuthContext } from "../helpers/AuthContext";
 
 export default function Event() {
   const { id } = useParams();
@@ -11,6 +12,7 @@ export default function Event() {
   const [rating, setRating] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { authState } = useContext(AuthContext);
 
   useEffect(() => {
     let isMounted = true;
@@ -32,48 +34,65 @@ export default function Event() {
       });
 
     return () => {
-      isMounted = false; // Cleanup function
+      isMounted = false;
     };
   }, [id]);
 
   const addReview = () => {
     if (!newReview.trim() || rating === 0) {
-      alert("Please provide both a review and a rating.");
-      return;
+        alert("Please provide both a review and a rating.");
+        return;
     }
 
     const accessToken = localStorage.getItem("accessToken");
-    console.log("AccessToken:", accessToken);
+    console.log("Access Token:", accessToken); // Debugging
+
     if (!accessToken) {
-      alert("You must be logged in to add a review.");
-      return;
+        alert("You must be logged in to add a review.");
+        return;
     }
 
     axios
-      .post(
-        "http://localhost:3001/reviews",
-        { review_text: newReview, rating, eventId: id },
-        { headers: {
-          Authorization: `Bearer ${accessToken}`,
-         } }
-      )
+        .post(
+            "http://localhost:3001/reviews",
+            { review_text: newReview, rating, eventId: id },
+            { headers: { Authorization: `Bearer ${accessToken}` } }
+        )
+        .then((response) => {
+            if (response.data.error) {
+                alert(response.data.error);
+            } else {
+                setReviews((prevReviews) => [...prevReviews, response.data.review]);
+                setNewReview("");
+                setRating(0);
+                alert("Your review was added successfully!");
+            }
+        })
+        .catch((error) => {
+            console.error("Error adding review:", error);
+            if (error.response) {
+                console.error("Response data:", error.response.data);
+                console.error("Response status:", error.response.status);
+            }
+            alert("There was an error adding your review. Please try again.");
+        });
+};
+
+  const deleteReview = (id) => {
+    const accessToken = localStorage.getItem("accessToken");
+    axios
+      .delete(`http://localhost:3001/reviews/${id}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
       .then((response) => {
-        if (response.data.error) {
-          alert(response.data.error);
-        } else {
-          setReviews((prevReviews) => [...prevReviews, response.data.review]);
-          setNewReview("");
-          setRating(0);
-          alert("Your review was added successfully!");
-        }
+        alert(response.data.message);
+        setReviews((prevReviews) => prevReviews.filter((review) => review.id !== id));
       })
       .catch((error) => {
-        console.error("Error adding review:", error);
-        alert("There was an error adding your review. Please try again.");
+        console.error("Error deleting review:", error);
+        alert("There was an error deleting your review. Please try again.");
       });
   };
-
-
 
   if (loading) return <p className="text-center mt-5">Loading event details...</p>;
   if (error) return <p className="text-center mt-5 text-danger">{error}</p>;
@@ -134,6 +153,9 @@ export default function Event() {
               reviews.map((review, key) => (
                 <div key={key} className="alert alert-secondary">
                   <p><strong>{review.username || "Anonymous"}</strong> wrote:</p>
+                  {authState.username === review.username && (
+                    <button onClick={() => deleteReview(review.id)}>X</button>
+                  )}
                   <p>{review.review_text || "No review text available"}</p>
                   {review.rating ? (
                     <p>
