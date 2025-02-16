@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+
+import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.min.css";
+import { AuthContext } from "../helpers/AuthContext";
 
 export default function Home() {
   const [listOfEvents, setListOfEvents] = useState([]);
@@ -13,21 +15,27 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [dateSelected, setDateSelected] = useState(new Date());
   const [visibleEvents, setVisibleEvents] = useState(4);
-  const navigate = useNavigate();
+  const { authState } = useContext(AuthContext);
+  let navigate = useNavigate();
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/events")
-      .then((response) => {
-        setListOfEvents(response.data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching events:", error);
-        setError("There was an error loading events. Please try again later.");
-        setLoading(false);
-      });
-  }, []);
+    if (!authState.status) {
+      navigate("/login");
+    } else {
+      axios
+        .get("http://localhost:3001/events")
+        .then((response) => {
+          setListOfEvents(response.data);
+          setLoading(false);
+        })
+        .catch((error) => {
+          console.error("Error fetching events:", error);
+          setError("There was an error loading events. Please try again later.");
+          setLoading(false);
+        });
+    }
+  }, [authState, navigate]); // Include authState in the dependency array
+  
 
   if (loading) return <p>Loading events...</p>;
   if (error) return <p className="text-danger">{error}</p>;
@@ -52,7 +60,7 @@ export default function Home() {
       <div className="row">
         {/* Left Column: Events List */}
         <div className="col-md-8">
-          <h2 className="mb-3 text-success">Up<span className="text-danger">comi</span>ng Events</h2>
+          <h2 className="mb-3 text-success"><span className="text-danger">Upcoming</span> Events</h2>
           {filteredEvents.length === 0 ? (
             <p>No upcoming events found.</p>
           ) : (

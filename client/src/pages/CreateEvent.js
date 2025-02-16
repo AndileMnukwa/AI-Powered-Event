@@ -1,48 +1,61 @@
-import React from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { FaCalendarAlt, FaMapMarkerAlt, FaUserAlt, FaFileAlt } from "react-icons/fa";
+import { FaCalendarAlt, FaMapMarkerAlt, FaFileAlt } from "react-icons/fa";
+import { AuthContext } from "../helpers/AuthContext";
 
 function CreateEvent() {
-  let navigate = useNavigate();
+  const { authState } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  // Improved date handling with state
+  const [currentDate] = useState(new Date().toISOString().split("T")[0]);
 
   const initialValues = {
     title: "",
     location: "",
     description: "",
-    date: new Date().toISOString().split("T")[0],
-    username: "",
+    date: currentDate,
   };
 
+  useEffect(() => {
+    if (!authState.status) {
+      navigate("/login");
+    }
+  }, [authState, navigate]);
+
   const validationSchema = Yup.object().shape({
-    title: Yup.string().required("Title is required"),
-    location: Yup.string().required("Location is required"),
-    description: Yup.string().required("Description is required"),
+    title: Yup.string().trim().required("Title is required"),
+    location: Yup.string().trim().required("Location is required"),
+    description: Yup.string().trim().required("Description is required"),
     date: Yup.string()
       .matches(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format")
       .required("Date is required"),
-    username: Yup.string()
-      .min(3, "Username must be at least 3 characters")
-      .max(15, "Username can't be more than 15 characters")
-      .required("Username is required"),
   });
 
-  const onSubmit = (data, { setSubmitting }) => {
-    axios
-      .post("http://localhost:3001/events", data)
-      .then(() => {
-        navigate("/");
-      })
-      .catch((error) => {
-        console.error("Error:", error.response ? error.response.data : error.message);
-      })
-      .finally(() => {
-        setSubmitting(false);
-      });
-  };
+ const onSubmit = async (data, { setSubmitting, setErrors }) => {
+  const accessToken = localStorage.getItem("accessToken");
+  if (!accessToken) {
+    setErrors({ general: "Unauthorized. Please log in again." });
+    setSubmitting(false);
+    return;
+  }
+
+  try {
+    await axios.post("http://localhost:3001/events", data, {
+      headers: { Authorization: `Bearer ${accessToken}` },  // Fix here
+    });
+    navigate("/");
+  } catch (error) {
+    console.error("Error:", error.response ? error.response.data : error.message);
+    setErrors({ general: error.response?.data?.error || "An unexpected error occurred" });
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   return (
     <div className="container d-flex justify-content-center align-items-center vh-100">
@@ -50,8 +63,10 @@ function CreateEvent() {
         <h2 className="text-center fw-bold mb-4">Create Event</h2>
 
         <Formik initialValues={initialValues} onSubmit={onSubmit} validationSchema={validationSchema}>
-          {({ isSubmitting }) => (
+          {({ isSubmitting, errors }) => (
             <Form>
+              {errors.general && <div className="alert alert-danger">{errors.general}</div>}
+
               {/* Title */}
               <div className="mb-4">
                 <label className="form-label">Title</label>
@@ -90,16 +105,6 @@ function CreateEvent() {
                   <Field type="date" className="form-control form-control-lg" name="date" />
                 </div>
                 <ErrorMessage name="date" component="div" className="text-danger small" />
-              </div>
-
-              {/* Username */}
-              <div className="mb-4">
-                <label className="form-label">Username</label>
-                <div className="input-group">
-                  <span className="input-group-text"><FaUserAlt /></span>
-                  <Field type="text" className="form-control form-control-lg" name="username" placeholder="Enter username" />
-                </div>
-                <ErrorMessage name="username" component="div" className="text-danger small" />
               </div>
 
               {/* Submit */}
