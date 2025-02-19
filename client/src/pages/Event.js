@@ -73,6 +73,11 @@ export default function Event() {
 
   const deleteReview = useCallback((reviewId) => {
     const accessToken = localStorage.getItem("accessToken");
+    if (!accessToken) {
+      alert("You must be logged in to delete a review.");
+      return;
+    }
+
     axios
       .delete(`http://localhost:3001/reviews/${reviewId}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -88,7 +93,11 @@ export default function Event() {
 
   const deleteEvent = (eventId) => {
     const accessToken = localStorage.getItem("accessToken");
-  
+    if (!accessToken) {
+      alert("You must be logged in to delete an event.");
+      return;
+    }
+
     axios
       .delete(`http://localhost:3001/events/${eventId}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -112,10 +121,7 @@ export default function Event() {
           alert("Network error. Please try again.");
         }
       });
-  
   };
-  
-  
 
   if (loading) return <p className="text-center mt-5">Loading event details...</p>;
   if (error) return <p className="text-center mt-5 text-danger">{error}</p>;
@@ -159,11 +165,18 @@ export default function Event() {
                       key={index}
                       className={`star ${index <= rating ? "filled" : ""}`}
                       onClick={() => setRating(index)}
-                      style={{ fontSize: "1.5rem", cursor: "pointer", color: index <= rating ? "gold" : "gray" }}
-                    >⭐</span>
+                      style={{
+                        fontSize: "1.5rem",
+                        cursor: "pointer",
+                        color: index <= rating ? "gold" : "gray"
+                      }}
+                    >
+                      ⭐
+                    </span>
                   ))}
                 </div>
               </div>
+
               <button onClick={addReview} className="btn btn-success mt-3">Add a Review</button>
             </div>
           </div>
