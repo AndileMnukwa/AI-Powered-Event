@@ -81,3 +81,19 @@ body {
   max-width: 900px; /* Ensure proper size */
   margin: auto;
 }
+
+.react-calendar__tile {
+  position: relative;
+}
+
+.event-dot {
+  width: 6px;
+  height: 6px;
+  background-color: red;
+  border-radius: 50%;
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+

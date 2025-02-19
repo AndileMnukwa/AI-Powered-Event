@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "@fortawesome/fontawesome-free/css/all.min.css";
 import { AuthContext } from "../helpers/AuthContext";
 
 export default function Event() {
@@ -161,18 +162,12 @@ export default function Event() {
                 <label htmlFor="rating">Rating:</label>
                 <div id="rating">
                   {[1, 2, 3, 4, 5].map((index) => (
-                    <span
+                    <i
                       key={index}
-                      className={`star ${index <= rating ? "filled" : ""}`}
                       onClick={() => setRating(index)}
-                      style={{
-                        fontSize: "1.5rem",
-                        cursor: "pointer",
-                        color: index <= rating ? "gold" : "gray"
-                      }}
-                    >
-                      ⭐
-                    </span>
+                      className={`fa-star fa-lg me-1 ${index <= rating ? "fas text-warning" : "far text-secondary"}`}
+                      style={{ cursor: "pointer" }}
+                    />
                   ))}
                 </div>
               </div>
