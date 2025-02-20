@@ -40,10 +40,17 @@ router.post("/", validateToken, async (req, res) => {
     }
 });
 
-// Fetch a specific event by ID along with its reviews
+// Fetch specific event details and its reviews (moved this to the event route)
 router.get("/:eventId", async (req, res) => {
     try {
         const eventId = req.params.eventId;
+
+        // Validate the eventId
+        if (!eventId || isNaN(eventId)) {
+            return res.status(400).json({ error: "Invalid event ID" });
+        }
+
+        // Fetch event details
         const event = await Events.findByPk(eventId, {
             attributes: ["id", "title", "location", "description", "date", "username"],
         });
@@ -54,8 +61,8 @@ router.get("/:eventId", async (req, res) => {
 
         // Fetch reviews associated with this event
         const reviews = await Reviews.findAll({
-            where: { eventId },
-            attributes: ["id", "review_text", "rating", "username", "createdAt"], // Include username
+            where: { EventId: eventId },
+            attributes: ["id", "review_text", "rating", "username", "createdAt", "sentiment"], // Include sentiment
         });
 
         res.json({ event, reviews });
@@ -64,6 +71,7 @@ router.get("/:eventId", async (req, res) => {
         res.status(500).json({ error: "Failed to fetch event" });
     }
 });
+
 
 // Delete an event (Requires Authentication & Ownership)
 router.delete("/:eventId", validateToken, async (req, res) => {

@@ -14,7 +14,6 @@ body {
   background-color: #34495e !important; /* Dark blue-grey */
   padding: 7px 70px;
   position: fixed;
-  top: 40px;
   width: 100%; /* Full width */
   z-index: 1000;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);

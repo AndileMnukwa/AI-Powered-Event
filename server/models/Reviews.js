@@ -21,6 +21,10 @@ module.exports = (sequelize, DataTypes) => {
                 min: 1,
                 max: 5,
             },
+        },
+        sentiment: {  // NEW COLUMN
+            type: DataTypes.STRING,
+            allowNull: true, // Allow null in case sentiment is not analyzed
         }
     }, { timestamps: true });
 
@@ -35,7 +39,6 @@ module.exports = (sequelize, DataTypes) => {
             onDelete: "CASCADE",
         });
     };
-    
 
     return Reviews;
 };

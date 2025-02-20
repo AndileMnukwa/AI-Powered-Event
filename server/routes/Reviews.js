@@ -1,43 +1,15 @@
 const express = require("express");
 const router = express.Router();
-const { Reviews } = require("../models");
+const { Reviews, Events, Users } = require("../models");
 const { validateToken } = require("../middlewares/AuthMiddleware");
+const Sentiment = require("sentiment");
 
-// Fetch all reviews for a specific event
-router.get("/:id", async (req, res) => {
-    try {
-        const eventId = parseInt(req.params.id, 10);
-
-        if (isNaN(eventId) || eventId <= 0) {
-            return res.status(400).json({ error: "Invalid event ID" });
-        }
-
-        const reviews = await Reviews.findAll({
-            where: { eventId },
-            attributes: ["id", "review_text", "rating", "username", "createdAt"],
-            order: [["createdAt", "DESC"]]
-        });
-
-        if (!reviews.length) {
-            return res.status(404).json({ error: "No reviews found for this event" });
-        }
-
-        res.json(reviews);
-    } catch (error) {
-        console.error("Database error:", error.message);
-        res.status(500).json({ error: "Internal server error" });
-    }
-});
-
-// Post a new review
+// Post a new review **with sentiment stored in the database**
 router.post("/", validateToken, async (req, res) => {
     try {
         const { review_text, rating, eventId } = req.body;
         const userId = req.user?.id;
         const username = req.user?.username;
-
-        console.log("Incoming request body:", req.body);
-        console.log("User object from token:", req.user);
 
         // Validation checks
         if (!userId || !username) {
@@ -50,31 +22,77 @@ router.post("/", validateToken, async (req, res) => {
             return res.status(400).json({ error: "Rating must be between 1 and 5" });
         }
 
+        // Perform sentiment analysis
+        const sentimentAnalyzer = new Sentiment();
+        const result = sentimentAnalyzer.analyze(review_text); // Analyzing the review text
+        console.log("Sentiment result:", result); // Log sentiment result for debugging
+
+        let sentimentCategory = "neutral"; // Default category
+        if (result.score > 0) {
+            sentimentCategory = "positive";
+        } else if (result.score < 0) {
+            sentimentCategory = "negative";
+        }
+
         // Check if the user has already reviewed the event
-        const existingReview = await Reviews.findOne({ where: { eventId, userId } });
+        const existingReview = await Reviews.findOne({ where: { EventId: eventId, UserId: userId } });
 
         if (existingReview) {
             return res.status(400).json({ error: "You have already reviewed this event." });
         }
 
-        // Create new review
+        // Create new review **with sentiment stored**
         const newReview = await Reviews.create({
             review_text,
             rating,
-            eventId,
-            userId,
-            username
+            EventId: eventId, // Ensure correct field name
+            UserId: userId, // Ensure correct field name
+            username,
+            sentiment: sentimentCategory, // Store sentiment
         });
-
-        console.log("New review created:", newReview);
 
         return res.status(201).json({
             message: "Review added successfully",
-            review: { id: newReview.id, review_text, rating, eventId, username },
+            review: {
+                id: newReview.id,
+                review_text,
+                rating,
+                eventId,
+                username,
+                sentiment: newReview.sentiment, // Now stored in the database
+            },
         });
     } catch (error) {
         console.error("Error adding review:", error.message);
         return res.status(500).json({ error: "There was an error adding your review. Please try again." });
+    }
+});
+
+// Get event details and reviews
+router.get("/:eventId", async (req, res) => {
+    try {
+        const { eventId } = req.params;
+
+        // Fetch event details
+        const event = await Events.findByPk(eventId);
+        if (!event) {
+            return res.status(404).json({ error: "Event not found" });
+        }
+
+        // Fetch reviews for the event
+        const reviews = await Reviews.findAll({
+            where: { EventId: eventId },
+            include: [{
+                model: Users,
+                attributes: ['username']
+            }],
+            order: [['createdAt', 'DESC']], // Fetch latest reviews first
+        });
+
+        return res.status(200).json({ event, reviews });
+    } catch (error) {
+        console.error("Error fetching event details and reviews:", error.message);
+        return res.status(500).json({ error: "There was an error fetching event details and reviews. Please try again." });
     }
 });
 
@@ -93,7 +111,7 @@ router.delete("/:reviewId", validateToken, async (req, res) => {
         }
 
         // Delete the review directly
-        const deletedCount = await Reviews.destroy({ where: { id: reviewId, userId } });
+        const deletedCount = await Reviews.destroy({ where: { id: reviewId, UserId: userId } });
 
         if (deletedCount === 0) {
             return res.status(404).json({ error: "Review not found or not owned by user" });

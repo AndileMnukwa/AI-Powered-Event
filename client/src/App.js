@@ -98,7 +98,7 @@ function App() {
     <AuthContext.Provider value={{ authState, setAuthState, deleteEvent }}>
       <div className="App">
         {/* Bootstrap Navbar */}
-        <nav className="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <nav className="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
           <div className="container-fluid">
             {/* Brand Name */}
             <Link className="navbar-brand fw-bold fs-3" to="/">
