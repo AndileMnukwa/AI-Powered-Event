@@ -6,12 +6,13 @@ import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FaCalendarAlt, FaMapMarkerAlt, FaFileAlt } from "react-icons/fa";
 import { AuthContext } from "../helpers/AuthContext";
+import eventImage from "../images/event-banner.jpg"; // Import event banner
+// import bgImage from "../images/background.jpg"; 
 
 function CreateEvent() {
   const { authState } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // Improved date handling with state
   const [currentDate] = useState(new Date().toISOString().split("T")[0]);
 
   const initialValues = {
@@ -36,31 +37,52 @@ function CreateEvent() {
       .required("Date is required"),
   });
 
- const onSubmit = async (data, { setSubmitting, setErrors }) => {
-  const accessToken = localStorage.getItem("accessToken");
-  if (!accessToken) {
-    setErrors({ general: "Unauthorized. Please log in again." });
-    setSubmitting(false);
-    return;
-  }
+  const onSubmit = async (data, { setSubmitting, setErrors }) => {
+    const accessToken = localStorage.getItem("accessToken");
+    if (!accessToken) {
+      setErrors({ general: "Unauthorized. Please log in again." });
+      setSubmitting(false);
+      return;
+    }
 
-  try {
-    await axios.post("http://localhost:3001/events", data, {
-      headers: { Authorization: `Bearer ${accessToken}` },  // Fix here
-    });
-    navigate("/");
-  } catch (error) {
-    console.error("Error:", error.response ? error.response.data : error.message);
-    setErrors({ general: error.response?.data?.error || "An unexpected error occurred" });
-  } finally {
-    setSubmitting(false);
-  }
-};
+    try {
+      await axios.post("http://localhost:3001/events", data, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      navigate("/");
+    } catch (error) {
+      console.error("Error:", error.response ? error.response.data : error.message);
+      setErrors({ general: error.response?.data?.error || "An unexpected error occurred" });
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
-    <div className="container d-flex justify-content-center align-items-center vh-100">
-      <div className="card shadow-lg p-5 w-100" style={{ maxWidth: "800px" }}>
-        <h2 className="text-center fw-bold mb-4">Create Event</h2>
+    <div
+    className="d-flex justify-content-center align-items-center vh-100"
+    style={{
+      backgroundImage: "url(../images/background.jpg)", // No import needed!
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      backgroundRepeat: "no-repeat",
+      minHeight: "100vh",
+      width: "100%",
+    }}
+  >
+  
+  
+      <div className="card shadow-lg p-5 w-100" style={{ maxWidth: "1000px", backgroundColor: "rgba(255, 255, 255, 0.9)", borderRadius: "15px" }}>
+        
+        {/* Event Image */}
+        <div className="text-center mb-4">
+          <img src={eventImage} alt="Event Banner" className="img-fluid rounded" style={{ maxHeight: "200px", width: "100%", objectFit: "cover" }} />
+        </div>
+
+        <h2 className="text-center glitch-text">
+  Create Event
+</h2>
+
 
         <Formik initialValues={initialValues} onSubmit={onSubmit} validationSchema={validationSchema}>
           {({ isSubmitting, errors }) => (
@@ -69,7 +91,6 @@ function CreateEvent() {
 
               {/* Title */}
               <div className="mb-4">
-                <label className="form-label">Title</label>
                 <div className="input-group">
                   <span className="input-group-text"><FaFileAlt /></span>
                   <Field type="text" className="form-control form-control-lg" name="title" placeholder="Enter event title" />
@@ -79,7 +100,6 @@ function CreateEvent() {
 
               {/* Location */}
               <div className="mb-4">
-                <label className="form-label">Location</label>
                 <div className="input-group">
                   <span className="input-group-text"><FaMapMarkerAlt /></span>
                   <Field type="text" className="form-control form-control-lg" name="location" placeholder="Enter event location" />
@@ -89,7 +109,6 @@ function CreateEvent() {
 
               {/* Description */}
               <div className="mb-4">
-                <label className="form-label">Description</label>
                 <div className="input-group">
                   <span className="input-group-text"><FaFileAlt /></span>
                   <Field as="textarea" className="form-control form-control-lg" name="description" placeholder="Enter event description" rows="3" />
@@ -99,7 +118,6 @@ function CreateEvent() {
 
               {/* Date */}
               <div className="mb-4">
-                <label className="form-label">Date</label>
                 <div className="input-group">
                   <span className="input-group-text"><FaCalendarAlt /></span>
                   <Field type="date" className="form-control form-control-lg" name="date" />

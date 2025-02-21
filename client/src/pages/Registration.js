@@ -2,11 +2,14 @@ import React, { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
+import { useNavigate } from "react-router-dom"; // For redirection
 import "bootstrap/dist/css/bootstrap.min.css";
-import { FaUser, FaLock } from "react-icons/fa"; // Importing icons from react-icons
+import { FaUser, FaLock } from "react-icons/fa"; 
 
 function Registration() {
-  const [successMessage, setSuccessMessage] = useState("");
+  const [message, setMessage] = useState(""); // Can be success or error message
+  const [messageType, setMessageType] = useState(""); // "success" or "error"
+  const navigate = useNavigate(); // For redirection
 
   const initialValues = {
     username: "",
@@ -25,17 +28,31 @@ function Registration() {
   });
 
   const onSubmit = (data, { setSubmitting, resetForm }) => {
+    setMessage(""); // Clear previous messages before submitting
+
     axios
       .post("http://localhost:3001/auth", data)
-      .then(() => {
-        setSuccessMessage("Successfully registered!");
-        resetForm(); // Clear form after submission
+      .then((response) => {
+        setMessage("Successfully registered!");
+        setMessageType("success");
+        resetForm(); // Clear form fields
+
+        // Redirect to login after 1 second
+        setTimeout(() => {
+          navigate("/login");
+        }, 1000);
       })
       .catch((error) => {
-        console.error("Error:", error);
+        // Handle error if username already exists
+        if (error.response && error.response.data) {
+          setMessage(error.response.data.message || "Registration failed. Try again.");
+        } else {
+          setMessage("An error occurred. Please try again.");
+        }
+        setMessageType("error");
       })
       .finally(() => {
-        setSubmitting(false); // Reset button state
+        setSubmitting(false);
       });
   };
 
@@ -44,42 +61,36 @@ function Registration() {
       <div className="card shadow p-4">
         <h2 className="text-center mb-4">Register</h2>
 
-        {/* Success Message Alert */}
-        {successMessage && <div className="alert alert-success">{successMessage}</div>}
+        {/* Display messages (Success or Error) */}
+        {message && (
+          <div className={`alert ${messageType === "success" ? "alert-success" : "alert-danger"}`}>
+            {message}
+          </div>
+        )}
 
         <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={onSubmit}>
           {({ isSubmitting }) => (
             <Form>
               {/* Username Field */}
-              <div className="mb-3 position-relative">
+              <div className="mb-3">
                 <label className="form-label">Username</label>
                 <div className="input-group">
                   <span className="input-group-text">
                     <FaUser />
                   </span>
-                  <Field
-                    type="text"
-                    className="form-control"
-                    name="username"
-                    placeholder="Enter username"
-                  />
+                  <Field type="text" className="form-control" name="username" placeholder="Enter username" />
                 </div>
                 <ErrorMessage name="username" component="div" className="text-danger" />
               </div>
 
               {/* Password Field */}
-              <div className="mb-3 position-relative">
+              <div className="mb-3">
                 <label className="form-label">Password</label>
                 <div className="input-group">
                   <span className="input-group-text">
                     <FaLock />
                   </span>
-                  <Field
-                    type="password"
-                    className="form-control"
-                    name="password"
-                    placeholder="Enter password"
-                  />
+                  <Field type="password" className="form-control" name="password" placeholder="Enter password" />
                 </div>
                 <ErrorMessage name="password" component="div" className="text-danger" />
               </div>

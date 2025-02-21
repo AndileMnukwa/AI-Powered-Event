@@ -10,6 +10,8 @@ import { AuthContext } from "./helpers/AuthContext";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+
 
 function App() {
   const [authState, setAuthState] = useState({
@@ -124,12 +126,12 @@ function App() {
                 {!authState.status ? (
                   <>
                     <li className="nav-item">
-                      <Link className="nav-link fs-5" to="/login">
+                      <Link className="nav-link fw-bold fs-5" to="/login">
                         Login
                       </Link>
                     </li>
                     <li className="nav-item">
-                      <Link className="nav-link fs-5" to="/registration">
+                      <Link className="nav-link fw-bold fs-5" to="/registration">
                         Register
                       </Link>
                     </li>
@@ -137,12 +139,12 @@ function App() {
                 ) : (
                   <>
                     <li className="nav-item">
-                      <Link className="nav-link fs-5" to="/">
+                      <Link className="nav-link fw-bold fs-5" to="/">
                         Home Page
                       </Link>
                     </li>
                     <li className="nav-item">
-                      <Link className="nav-link fs-5" to="/create_event">
+                      <Link className="nav-link fw-bold fs-5" to="/create_event">
                         Create An Event
                       </Link>
                     </li>

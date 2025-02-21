@@ -17,7 +17,7 @@ body {
   width: 100%; /* Full width */
   z-index: 1000;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  border-radius: 0x; /* Remove rounded corners for full width */
+  border-radius: 10px; /* Fixed to 0 to remove rounded corners */
 }
 
 /* Navbar Content Alignment */
@@ -28,14 +28,23 @@ body {
 .nav-item .nav-link {
   color: white !important;
   font-size: 1.2rem;
-  font-weight: bold;
-  text-align: center;
+  font-weight: bold !important;
+  text-align: center !important;
   transition: color 0.3s ease-in-out;
+  justify-content: space-around !important;
+  margin: 0 10px; /* Added spacing between navbar items */
 }
 
 .nav-item .nav-link:hover {
   text-decoration: underline;
-  color: #ff0033;
+  color: #ff0033 !important;
+  text-transform: uppercase;
+}
+
+.navbar-brand:hover {
+  text-decoration: underline;
+  color: #ff0033 !important;
+  text-transform: uppercase;
 }
 
 /* Home Page Container */
@@ -46,7 +55,6 @@ body {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  /* min-height: 100vh; */
   width: 100%; /* Full width */
   max-width: 1200px; /* Keep content centered */
   position: relative;
@@ -71,24 +79,31 @@ body {
   position: relative;
   z-index: 1;
 }
+
+/* Container Width Control */
 .container {
   max-width: 1200px !important; /* Force full width */
 }
 
+/* Card Styling */
 .card {
   width: 100% !important;
   max-width: 900px; /* Ensure proper size */
   margin: auto;
+  padding: 15px; /* Added padding for a cleaner look */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Light shadow for depth */
 }
 
+/* React Calendar Tile */
 .react-calendar__tile {
   position: relative;
 }
 
+/* Event Indicator Dot */
 .event-dot {
   width: 6px;
   height: 6px;
-  background-color: red;
+  background-color: #0d6efd;
   border-radius: 50%;
   position: absolute;
   bottom: 4px;
@@ -96,3 +111,29 @@ body {
   transform: translateX(-50%);
 }
 
+/* Button Styles */
+.button {
+  display: inline-block;
+  visibility: visible !important;
+}
+
+@keyframes glitch {
+  0% { text-shadow: 2px 2px red; }
+  25% { text-shadow: -2px -2px cyan; }
+  50% { text-shadow: 2px -2px lime; }
+  75% { text-shadow: -2px 2px yellow; }
+  100% { text-shadow: 2px 2px red; }
+}
+
+.glitch-text {
+  font-weight: bold;
+  font-size: 2.5rem; /* Adjust size */
+  color: #0d6efd; /* Text color */
+  animation: glitch 0.5s infinite alternate; /* Apply animation */
+}
+
+.text-shadow {
+  font-weight: bold;
+  font-size: 2.5rem;
+  text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.5);
+}
