@@ -7,6 +7,10 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import FloatingChatbot from "./components/FloatingChatbot";
 // import logo from "./images/logo.png";
+import config from './config';
+
+// Override axios defaults globally
+axios.defaults.baseURL = config.API_BASE_URL;
 
 import Home from "./pages/Home";
 import CreateEvent from "./pages/CreateEvent";
