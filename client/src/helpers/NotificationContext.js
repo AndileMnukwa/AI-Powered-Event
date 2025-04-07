@@ -13,7 +13,7 @@ export const NotificationProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    const newSocket = io("http://localhost:3001");
+    const newSocket = io("https://ai-powered-event-production.up.railway.app");
     setSocket(newSocket);
 
     return () => newSocket.close();
@@ -52,7 +52,7 @@ export const NotificationProvider = ({ children }) => {
   const markAsRead = async (notificationId) => {
     try {
       const token = localStorage.getItem("accessToken");
-      await fetch(`http://localhost:3001/notifications/${notificationId}/read`, {
+      await fetch(`https://ai-powered-event-production.up.railway.app/notifications/${notificationId}/read`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -70,7 +70,7 @@ export const NotificationProvider = ({ children }) => {
   const markAllAsRead = async () => {
     try {
       const token = localStorage.getItem("accessToken");
-      await fetch("http://localhost:3001/notifications/read-all", {
+      await fetch("https://ai-powered-event-production.up.railway.app/notifications/read-all", {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,

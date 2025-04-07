@@ -32,7 +32,7 @@ export default function AdminRegistrations() {
       setError(null); // Clear previous errors
       try {
         // Fetch all events first
-        const eventsResponse = await axios.get('http://localhost:3001/events', {
+        const eventsResponse = await axios.get('https://ai-powered-event-production.up.railway.app/events', {
           headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` }
         });
         setEvents(eventsResponse.data);
@@ -40,7 +40,7 @@ export default function AdminRegistrations() {
         // If we have a specific event selected, fetch registrations for that event
         if (selectedEvent !== 'all' && selectedEvent !== '') {
           const registrationsResponse = await axios.get(
-            `http://localhost:3001/registrations/event/${selectedEvent}`,
+            `https://ai-powered-event-production.up.railway.app/registrations/event/${selectedEvent}`,
             { headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` } }
           );
           setRegistrations(registrationsResponse.data);
@@ -48,7 +48,7 @@ export default function AdminRegistrations() {
           // Otherwise, fetch all registrations (admin-only endpoint)
           try {
             const registrationsResponse = await axios.get(
-              'http://localhost:3001/registrations/all',
+              'https://ai-powered-event-production.up.railway.app/registrations/all',
               { headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` } }
             );
             setRegistrations(registrationsResponse.data);
@@ -60,7 +60,7 @@ export default function AdminRegistrations() {
             for (const event of eventsResponse.data) {
               try {
                 const eventRegResponse = await axios.get(
-                  `http://localhost:3001/registrations/event/${event.id}`,
+                  `https://ai-powered-event-production.up.railway.app/registrations/event/${event.id}`,
                   { headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` } }
                 );
                 allRegistrations.push(...eventRegResponse.data);
@@ -94,7 +94,7 @@ export default function AdminRegistrations() {
   const handleCheckIn = async (registrationId, currentStatus) => {
     try {
       await axios.put(
-        `http://localhost:3001/registrations/${registrationId}/check-in`,
+        `https://ai-powered-event-production.up.railway.app/registrations/${registrationId}/check-in`,
         { checkInStatus: !currentStatus },
         { headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` } }
       );
@@ -117,7 +117,7 @@ export default function AdminRegistrations() {
   const handleSendEmail = async (registrationId) => {
     try {
       await axios.post(
-        `http://localhost:3001/registrations/${registrationId}/resend-email`,
+        `https://ai-powered-event-production.up.railway.app/registrations/${registrationId}/resend-email`,
         {},
         { headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` } }
       );

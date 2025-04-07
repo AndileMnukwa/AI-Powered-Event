@@ -52,7 +52,7 @@ function Login() {
     setMessage(null);
   
     try {
-      const { data } = await axios.post("http://localhost:3001/auth/login", { 
+      const { data } = await axios.post("https://ai-powered-event-production.up.railway.app/auth/login", { 
         username: username.trim(), 
         password 
       });

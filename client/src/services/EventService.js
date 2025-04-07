@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 // Base URL for API endpoints
-const API_BASE_URL = 'http://localhost:3001';
+const API_BASE_URL = 'https://ai-powered-event-production.up.railway.app';
 
 // Helper function to get the auth header with token
 const getAuthHeader = () => {
