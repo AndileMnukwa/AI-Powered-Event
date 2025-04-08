@@ -5,6 +5,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.min.css";
 import { AuthContext } from "../helpers/AuthContext";
 import { format } from "date-fns";
+import API from "../services/api";
 
 export default function Home() {
   const [listOfEvents, setListOfEvents] = useState([]);
@@ -33,7 +34,7 @@ export default function Home() {
     errorRed: "#FF4D6A",
     successGreen: "#2DD4BF",
   };
-  
+
   // Footer styles defined at the top to avoid ESLint warnings
   const footerStyle = {
     backgroundColor: colors.navy,
@@ -76,8 +77,8 @@ export default function Home() {
     if (!authState.status) {
       navigate("/login");
     } else {
-      axios
-        .get("ai-powered-event-production.up.railway.app/events")
+      API
+        .get("/events") // Use the relative path
         .then((response) => {
           setListOfEvents(response.data);
           setLoading(false);
@@ -109,15 +110,15 @@ export default function Home() {
   // Function to correct the image path
   const getImageUrl = (imagePath) => {
     if (!imagePath) return null;
-    
+
     // If the path already starts with http, return as is
     if (imagePath.startsWith('http')) return imagePath;
-    
+
     // If the path begins with "/uploads/events/", ensure it's properly formed
     if (imagePath.startsWith('/uploads/events/')) {
       return `ai-powered-event-production.up.railway.app${imagePath}`;
     }
-    
+
     // For any other case, just append the path to the base URL
     return `ai-powered-event-production.up.railway.app/${imagePath}`;
   };
@@ -141,8 +142,8 @@ export default function Home() {
       <div className="container-fluid" style={{ paddingTop: "100px" }}>
         <div className="alert alert-danger" role="alert">
           {error}{" "}
-          <button 
-            className="btn btn-sm" 
+          <button
+            className="btn btn-sm"
             onClick={() => setLoading(true)}
             style={{ backgroundColor: colors.navy, color: colors.white }}
           >
@@ -174,10 +175,10 @@ export default function Home() {
           matchesSearch = event.location.toLowerCase().includes(searchQuery.toLowerCase());
         }
       }
-      
+
       // Apply category filter
       const matchesCategory = !selectedCategory || event.category === selectedCategory;
-      
+
       return matchesSearch && matchesCategory;
     });
   };
@@ -224,7 +225,7 @@ export default function Home() {
         <div
           className="card h-100 shadow-sm event-card"
           onClick={() => navigate(`/event/${event.id}`)}
-          style={{ 
+          style={{
             cursor: "pointer",
             borderRadius: "12px",
             overflow: "hidden",
@@ -238,22 +239,22 @@ export default function Home() {
           {/* Event Image with Hover Effect */}
           <div style={{ height: "180px", overflow: "hidden", position: "relative" }}>
             {event.image ? (
-              <img 
-                src={getImageUrl(event.image)} 
-                className="card-img-top" 
+              <img
+                src={getImageUrl(event.image)}
+                className="card-img-top"
                 alt={event.title}
-                style={{ 
-                  height: "100%", 
-                  width: "100%", 
+                style={{
+                  height: "100%",
+                  width: "100%",
                   objectFit: "cover",
                   transition: "transform 0.3s ease"
                 }}
               />
             ) : (
-              <div 
+              <div
                 className="d-flex justify-content-center align-items-center"
-                style={{ 
-                  height: "100%", 
+                style={{
+                  height: "100%",
                   backgroundColor: "#f0f0f0",
                   color: "#aaa"
                 }}
@@ -261,9 +262,9 @@ export default function Home() {
                 <i className="bi bi-image" style={{ fontSize: "3rem" }}></i>
               </div>
             )}
-            
+
             {/* Overlay that appears on hover */}
-            <div 
+            <div
               style={{
                 position: "absolute",
                 top: 0,
@@ -290,26 +291,26 @@ export default function Home() {
               {event.username && (
                 <p className="mb-1"><i className="bi bi-person-fill me-2"></i>By: {event.username}</p>
               )}
-              <button 
-                className="btn btn-sm mt-2" 
+              <button
+                className="btn btn-sm mt-2"
                 style={{ backgroundColor: colors.pink, color: colors.white }}
               >
                 View Details
               </button>
             </div>
           </div>
-          
+
           {/* Category Badge */}
           <div className="position-absolute" style={{ top: "10px", right: "10px", zIndex: 2 }}>
             <span className="badge" style={{ backgroundColor: colors.pink, color: colors.white }}>
               {event.category || "Uncategorized"}
             </span>
           </div>
-          
+
           {/* Card body - hidden on hover */}
-          <div 
-            className="card-body" 
-            style={{ 
+          <div
+            className="card-body"
+            style={{
               display: hoveredEventId === event.id ? 'none' : 'block',
               backgroundColor: colors.white
             }}
@@ -357,7 +358,7 @@ export default function Home() {
                         />
                       </div>
                     </div>
-                    
+
                     {/* Search Type Selector */}
                     <div className="col-md-3 mb-2 mb-md-0">
                       <select
@@ -374,10 +375,10 @@ export default function Home() {
                         <option value="location">By Location</option>
                       </select>
                     </div>
-                    
+
                     {/* Category Filter */}
                     <div className="col-md-3">
-                      <select 
+                      <select
                         className="form-select border-0"
                         value={selectedCategory}
                         onChange={(e) => setSelectedCategory(e.target.value)}
@@ -531,21 +532,21 @@ export default function Home() {
             Connect with event organizers and attendees from around the world
           </p>
           <p style={footerTextStyle}>
-            <button 
-              onClick={() => navigate("/terms")} 
-              style={{...footerLinkStyle, background: "none", border: "none", cursor: "pointer", padding: 0}}
+            <button
+              onClick={() => navigate("/terms")}
+              style={{ ...footerLinkStyle, background: "none", border: "none", cursor: "pointer", padding: 0 }}
             >
               Terms
             </button> •
-            <button 
-              onClick={() => navigate("/privacy")} 
-              style={{...footerLinkStyle, background: "none", border: "none", cursor: "pointer", margin: "0 0.5rem", padding: 0}}
+            <button
+              onClick={() => navigate("/privacy")}
+              style={{ ...footerLinkStyle, background: "none", border: "none", cursor: "pointer", margin: "0 0.5rem", padding: 0 }}
             >
               Privacy
             </button> •
-            <button 
-              onClick={() => navigate("/support")} 
-              style={{...footerLinkStyle, background: "none", border: "none", cursor: "pointer", padding: 0}}
+            <button
+              onClick={() => navigate("/support")}
+              style={{ ...footerLinkStyle, background: "none", border: "none", cursor: "pointer", padding: 0 }}
             >
               Support
             </button>
