@@ -4,6 +4,8 @@ import { io } from "socket.io-client";
 import { AuthContext } from "../helpers/AuthContext";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import API from "../services/api";
+import config from "../config";
 
 const UserNotificationIcon = () => {
   const { authState } = useContext(AuthContext);
@@ -35,12 +37,12 @@ const UserNotificationIcon = () => {
         const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) return;
 
-        const response = await fetch("ai-powered-event-production.up.railway.app/notifications", {
+        const response = await API.get("/notifications", {
           headers: { Authorization: `Bearer ${accessToken}` },
-        });
+       });
 
         if (response.ok) {
-          const data = await response.json();
+          const data = response.data;
 
           // Get read notification IDs from localStorage
           const readNotificationIds = JSON.parse(localStorage.getItem("readNotifications") || "[]");
@@ -61,7 +63,7 @@ const UserNotificationIcon = () => {
 
     fetchUserNotifications();
 
-    socketRef.current = io("ai-powered-event-production.up.railway.app");
+    socketRef.current = io(API.defaults.baseURL);
 
     socketRef.current.on("connect", () => {
       const accessToken = localStorage.getItem("accessToken");
@@ -90,12 +92,11 @@ const UserNotificationIcon = () => {
   const markUserNotificationAsRead = async (notification) => {
     try {
       const accessToken = localStorage.getItem("accessToken");
-      const response = await fetch(`ai-powered-event-production.up.railway.app/notifications/${notification.id}/read`, {
-        method: "PUT",
+      const response = await API.put(`/notifications/${notification.id}/read`, null, { // Use API.put, null body for PUT, relative path
         headers: { Authorization: `Bearer ${accessToken}` },
-      });
+     });
 
-      if (response.ok) {
+     if (response.status === 200) {
         // Update state
         setUserNotifications((prev) => prev.map((n) => (n.id === notification.id ? { ...n, isRead: true } : n)));
         setUnreadUserCount((prev) => Math.max(0, prev - 1));
@@ -114,12 +115,11 @@ const UserNotificationIcon = () => {
   const markAllAsRead = async () => {
     try {
       const accessToken = localStorage.getItem("accessToken");
-      const response = await fetch(`ai-powered-event-production.up.railway.app/notifications/read-all`, {
-        method: "PUT",
+      const response = await API.put(`/notifications/read-all`, null, {
         headers: { Authorization: `Bearer ${accessToken}` },
-      });
+     });
 
-      if (response.ok) {
+     if (response.status === 200) {
         // Get all notification IDs
         const allNotificationIds = userNotifications.map((n) => n.id);
 

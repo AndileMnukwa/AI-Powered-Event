@@ -36,7 +36,7 @@ const LandingPage = () => {
   useEffect(() => {
     // Fetch events from API
     API
-      .get("https://ai-powered-event-production.up.railway.app/events")
+      .get("/events")
       .then((response) => {
         // Get only upcoming events and limit to 3
         const today = new Date();

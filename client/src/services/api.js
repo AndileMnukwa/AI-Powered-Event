@@ -3,7 +3,7 @@ import axios from 'axios';
 
 // Create axios instance with defaults
 const API = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:3001',
+  baseURL: process.env.REACT_APP_API_URL || 'https://ai-powered-event-production.up.railway.app',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'
