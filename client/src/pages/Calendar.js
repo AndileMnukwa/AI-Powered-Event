@@ -6,6 +6,7 @@ import { Tooltip } from "bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.min.css";
 import { FaHeart } from "react-icons/fa";
 import { AuthContext } from "../helpers/AuthContext";
+import API from "../services/api";
 
 export default function ImprovedCalendarView() {
   const [listOfEvents, setListOfEvents] = useState([]);
@@ -82,8 +83,8 @@ export default function ImprovedCalendarView() {
     if (!authState.status) {
       navigate("/login");
     } else {
-      axios
-        .get("http://localhost:3001/events")
+      API
+        .get("https://ai-powered-event-production.up.railway.app/events")
         .then((response) => {
           setListOfEvents(response.data);
           setLoading(false);
@@ -302,7 +303,7 @@ export default function ImprovedCalendarView() {
     
     // You could also track this event with an API call
     /*
-    axios.post('http://localhost:3001/events/calendar-add', {
+    API.post('https://ai-powered-event-production.up.railway.app/events/calendar-add', {
       eventId: event.id,
       userId: authState.id
     }).catch(error => console.error('Error logging calendar add:', error));
