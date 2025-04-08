@@ -1,14 +1,14 @@
 "use client"
 
-import React, { useState, useEffect, useContext } from "react"; // Added React import
+import { useState, useEffect } from "react";
 import { useLocation, Routes, Route, Link, useNavigate, Navigate } from "react-router-dom";
-// Removed axios import as we use API instance now
+import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import FloatingChatbot from "./components/FloatingChatbot";
-import API from "./services/api"; // Ensure this path is correct
+import API from "./services/api"; // Adjust path if needed
+// import logo from "./images/logo.png";
 
-// Import Pages
 import Home from "./pages/Home";
 import CreateEvent from "./pages/CreateEvent";
 import Event from "./pages/Event";
@@ -29,225 +29,272 @@ import Registration from "./pages/Registration";
 import Chatbot from "./pages/Chatbot";
 import EditEvent from "./pages/EditEvent";
 import AdminDashboard from "./pages/AdminDashboard";
-import ResetPassword from "./pages/ResetPassword";
-import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword"; // Add this
+import ForgotPassword from "./pages/ForgotPassword"; // Add this
 import AdminRegistrations from "./pages/AdminRegistrations";
 import MyRegistrations from "./pages/MyRegistrations";
 
-// Import Helpers and Context
 import { AuthContext } from "./helpers/AuthContext";
-import { NotificationProvider, useNotifications } from "./helpers/NotificationContext"; // Assuming useNotifications is used elsewhere or remove if not
-import NotificationIcon from "./pages/NotificationIcon"; // Keep if using the non-socket version
-import UserNotificationIcon from "./pages/UserNotificationIcon";
+import { NotificationProvider, useNotifications } from "./helpers/NotificationContext";
+import NotificationIcon from "./pages/NotificationIcon";
+import UserNotificationIcon from "./pages/UserNotificationIcon"; // Adjust path as needed
+// Add this import at the top of App.js with other imports
 import AdminNotificationIcon from "./pages/AdminNotificationIcon";
-
-// --- Protected Route Wrapper Component ---
-// (Place this outside the App component or in a separate file and import it)
-function ProtectedRouteWrapper({ children, adminOnly = false }) {
-  const { authState, authLoading } = useContext(AuthContext);
-
-  if (authLoading) {
-    // Show a loading indicator while checking authentication
-    // You can replace this with a more sophisticated spinner component
-    return (
-      <div className="d-flex justify-content-center align-items-center" style={{ height: "80vh" }}>
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (!authState.status) {
-    // If auth check is done and user is not logged in, redirect to login
-    return <Navigate to="/login" replace />;
-  }
-
-  if (adminOnly && !authState.isAdmin) {
-    // If route requires admin and user is not admin, redirect to home
-    return <Navigate to="/home" replace />;
-  }
-
-  // If auth check is done and user is logged in (and has admin rights if required), render the child component
-  return children;
-}
-// --- End Protected Route Wrapper ---
-
 
 function App() {
   const location = useLocation();
   const navigate = useNavigate();
-  // const { notifications, markAsRead, markAllAsRead } = useNotifications(); // Keep if using NotificationIcon
-
-  // --- State Hooks ---
+  const { notifications, markAsRead, markAllAsRead } = useNotifications(); // Use the hook here
   const [authState, setAuthState] = useState({
     username: "",
     id: 0,
     status: false,
     isAdmin: false,
   });
-  const [authLoading, setAuthLoading] = useState(true); // <-- 1. Add Loading State
+  const [authLoading, setAuthLoading] = useState(true); // Add loading state
 
-  const useSocketNotifications = true; // Assuming you want to use the socket version
+  const useSocketNotifications = true;
 
-  // --- Effect for Initial Auth Check ---
   useEffect(() => {
-    setAuthLoading(true); // Start loading on effect run
     const token = localStorage.getItem("accessToken");
-    // const expiry = localStorage.getItem("tokenExpiry"); // Optional: expiry check
 
-    // Optional: Check local expiry first
-    // const now = new Date().getTime();
-    // if (!token || (expiry && now > parseInt(expiry))) {
-    //   localStorage.removeItem("accessToken");
-    //   localStorage.removeItem("tokenExpiry");
-    //   setAuthState({ username: "", id: 0, status: false, isAdmin: false });
-    //   setAuthLoading(false); // Done loading
-    //   return;
-    // }
+    if (!token) {
+      setAuthState({ username: "", id: 0, status: false, isAdmin: false });
+      setAuthLoading(false); // Set loading to false when no token
+      return;
+    }
 
-    if (!token) { // Simplified check without local expiry
-        setAuthState({ username: "", id: 0, status: false, isAdmin: false });
-        setAuthLoading(false); // <-- Done loading
-        return;
-      }
-
-    API // Use the imported API instance
-      .get("/auth/auth", { // Use relative path
+    API
+      .get("/auth/auth", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => {
         if (response.data.error) {
-          // Handle case where backend explicitly returns an error (e.g., invalid token)
           setAuthState({ username: "", id: 0, status: false, isAdmin: false });
           localStorage.removeItem("accessToken");
-          // localStorage.removeItem("tokenExpiry"); // If using expiry
         } else {
-          // Successfully authenticated
           setAuthState({
             username: response.data.username || "User",
             id: response.data.id,
             status: true,
             isAdmin: response.data.isAdmin || false,
           });
-          // Optional: Redirect admin away from login if they land there while logged in
-          // Note: Redirecting based on current location *within* this effect can be tricky.
-          // It's often better handled by the routing logic itself.
-          // if (response.data.isAdmin && window.location.pathname === "/login") {
-          //   navigate("/admin", { replace: true });
-          // }
+
+          if (response.data.isAdmin && window.location.pathname === "/login") {
+            navigate("/admin");
+          }
         }
       })
       .catch(() => {
-        // Handle network errors or other issues where the token might be invalid/expired
         setAuthState({ username: "", id: 0, status: false, isAdmin: false });
         localStorage.removeItem("accessToken");
-        // localStorage.removeItem("tokenExpiry"); // If using expiry
       })
       .finally(() => {
-        setAuthLoading(false); // <-- 2. Set loading false after API call completes
+        setAuthLoading(false); // Set loading to false after API call completes
       });
-  }, [navigate]); // Dependency array - navigate is stable
+  }, [navigate]);
 
-  // --- Logout Function ---
   const logout = () => {
     localStorage.removeItem("accessToken");
-    // localStorage.removeItem("tokenExpiry"); // If using expiry
     setAuthState({ username: "", id: 0, status: false, isAdmin: false });
-    // No need to set loading state here, just clear auth state
     navigate("/login");
   };
 
-  // --- Delete Event Function ---
   const deleteEvent = async (eventId) => {
     try {
       const token = localStorage.getItem("accessToken");
+
       if (!token) {
         navigate("/login");
         return;
       }
-      // Use API instance and relative path
-      const response = await API.delete(`/events/${eventId}`, {
+
+      const response = await API.delete(`https://ai-powered-event-production.up.railway.app/events/${eventId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       if (response.status === 200) {
-        navigate("/home"); // Or maybe refresh data instead of navigating?
+        navigate("/home");
       }
     } catch (error) {
-      console.error("Delete Event error:", error); // Log the error
-      if (error.response?.status === 401 || error.response?.status === 403) {
-        // Handle auth errors during delete by logging out
-        logout();
-      } else {
-        alert(`Failed to delete event: ${error.response?.data?.error || error.message}`);
+      if (error.response?.status === 401) {
+        localStorage.removeItem("accessToken");
+        setAuthState({ username: "", id: 0, status: false, isAdmin: false });
+        navigate("/login");
       }
     }
   };
+  const hideNavbarRoutes = ["/", "/landingPage", "/login", "/registration"];
+  {
+    !hideNavbarRoutes.includes(location.pathname) && (
+      <div style={{ paddingTop: "80px" }}></div>
+    )
+  }
 
-  // --- Navbar Logic ---
-  const hideNavbarRoutes = ["/", "/landingPage", "/login", "/registration", "/forgot-password", "/reset-password"];
-  const showNavbar = !hideNavbarRoutes.some(route => location.pathname.startsWith(route.replace(':token',''))); // Handle reset route
+  // Simple loading component
+  const LoadingSession = () => (
+    <div className="d-flex justify-content-center align-items-center" style={{ height: "100vh" }}>
+      <div className="spinner-border text-primary" role="status">
+        <span className="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  );
+
+  // Don't render anything meaningful until auth check is complete
+  if (authLoading) {
+    return <LoadingSession />;
+  }
 
   return (
-    // --- Context Provider ---
-    // 3. Pass authLoading state through context
     <AuthContext.Provider value={{ authState, setAuthState, deleteEvent, authLoading }}>
       <NotificationProvider>
         <div className="App">
-          {/* --- Navbar Rendering --- */}
-          {showNavbar && (
+          {!hideNavbarRoutes.includes(location.pathname) && (
             <nav className="navbar navbar-expand-lg navbar-dark fixed-top shadow-sm" style={{ backgroundColor: '#001F3F' }}>
               <div className="container">
-                <Link className="navbar-brand d-flex align-items-center" to={authState.isAdmin ? "/admin" : "/home"}>
+                {/* Brand/Logo */}
+                <Link className="navbar-brand d-flex align-items-center" to="/">
                   <i className="bi bi-calendar-event fs-4 me-2"></i>
                   <span className="fw-bold">VibeCatcher</span>
                 </Link>
-                <button className="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+
+                {/* Navbar Toggler */}
+                <button
+                  className="navbar-toggler border-0"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#navbarNav"
+                  aria-controls="navbarNav"
+                  aria-expanded="false"
+                  aria-label="Toggle navigation"
+                >
                   <span className="navbar-toggler-icon"></span>
                 </button>
+
+                {/* Navbar Links */}
                 <div className="collapse navbar-collapse" id="navbarNav">
                   <ul className="navbar-nav mx-auto">
-                    {/* Links updated based on authState.status directly */}
-                    {authState.status && !authState.isAdmin && (
+                    {!authState.status ? (
                       <>
-                        <li className="nav-item px-2"><Link className="nav-link" to="/home"><i className="bi bi-house-door me-1"></i> Home</Link></li>
-                        <li className="nav-item px-2"><Link className="nav-link" to="/my-registrations"><i className="bi bi-ticket-perforated me-1"></i> My Tickets</Link></li>
-                        <li className="nav-item px-2"><Link className="nav-link" to="/calendar"><i className="bi bi-calendar3 me-1"></i> Calendar</Link></li>
-                        <li className="nav-item px-2"><Link className="nav-link" to="/AIReviewsPage"><i className="bi bi-bar-chart-line me-1"></i> AI Reviews</Link></li>
-                        <li className="nav-item px-2"><Link className="nav-link" to="/AIInsights"><i className="bi bi-lightbulb me-1"></i> AI Insights</Link></li>
-                        <li className="nav-item px-2"><Link className="nav-link" to="/PersonalizedRecommendations"><i className="bi bi-bullseye me-1"></i> Recommendations</Link></li>
+                        <li className="nav-item px-2">
+                          <Link className="nav-link" to="/login">
+                            Login
+                          </Link>
+                        </li>
+                        <li className="nav-item px-2">
+                          <Link className="nav-link" to="/registration">
+                            Register
+                          </Link>
+                        </li>
                       </>
-                    )}
-                    {authState.status && authState.isAdmin && (
+                    ) : (
                       <>
-                        <li className="nav-item px-2"><Link className="nav-link" to="/admin"><i className="bi bi-speedometer2 me-1"></i> Dashboard</Link></li>
-                        <li className="nav-item px-2"><Link className="nav-link" to="/create_event"><i className="bi bi-plus-circle me-1"></i> Create Event</Link></li>
-                        <li className="nav-item px-2"><Link className="nav-link" to="/admin/registrations"><i className="bi bi-person-badge me-1"></i> Registrations</Link></li>
-                        <li className="nav-item px-2"><Link className="nav-link" to="/admincalendar"><i className="bi bi-calendar3 me-1"></i> Calendar</Link></li>
-                        <li className="nav-item px-2"><Link className="nav-link" to="/AdminAIReviewsDashboard"><i className="bi bi-bar-chart-line me-1"></i> AI Analytics</Link></li>
-                        <li className="nav-item px-2"><Link className="nav-link" to="/AIInsights"><i className="bi bi-lightbulb me-1"></i> AI Insights</Link></li>
+                        {!authState.isAdmin && (
+                          <>
+                            <li className="nav-item px-2">
+                              <Link className="nav-link" to="/home">
+                                <i className="bi bi-house-door me-1"></i> Home
+                              </Link>
+                            </li>
+                            <li className="nav-item px-2">
+                              <Link className="nav-link" to="/my-registrations">
+                                <i className="bi bi-ticket-perforated me-1"></i> My Tickets
+                              </Link>
+                            </li>
+                            <li className="nav-item px-2">
+                              <Link className="nav-link" to="/calendar">
+                                <i className="bi bi-calendar3 me-1"></i> Calendar
+                              </Link>
+                            </li>
+                            <li className="nav-item px-2">
+                              <Link className="nav-link" to="/AIReviewsPage">
+                                <i className="bi bi-bar-chart-line me-1"></i> AI Reviews
+                              </Link>
+                            </li>
+                            <li className="nav-item px-2">
+                              <Link className="nav-link" to="/AIInsights">
+                                <i className="bi bi-lightbulb me-1"></i> AI Insights
+                              </Link>
+                            </li>
+                            <li className="nav-item px-2">
+                              <Link className="nav-link" to="/PersonalizedRecommendations">
+                                <i className="bi bi-bullseye me-1"></i> Recommendations
+                              </Link>
+                            </li>
+                          </>
+                        )}
+                        {authState.isAdmin && (
+                          <>
+                            <li className="nav-item px-2">
+                              <Link className="nav-link" to="/admin">
+                                <i className="bi bi-speedometer2 me-1"></i> Dashboard
+                              </Link>
+                            </li>
+                            <li className="nav-item px-2">
+                              <Link className="nav-link" to="/create_event">
+                                <i className="bi bi-plus-circle me-1"></i> Create Event
+                              </Link>
+                            </li>
+                            <li className="nav-item px-2">
+                              <Link className="nav-link" to="/admin/registrations">
+                                <i className="bi bi-person-badge me-1"></i> Registrations
+                              </Link>
+                            </li>
+                            <li className="nav-item px-2">
+                              <Link className="nav-link" to="/admincalendar">
+                                <i className="bi bi-calendar3 me-1"></i> Calendar
+                              </Link>
+                            </li>
+                            <li className="nav-item px-2">
+                              <Link className="nav-link" to="/AdminAIReviewsDashboard">
+                                <i className="bi bi-bar-chart-line me-1"></i> AI Analytics
+                              </Link>
+                            </li>
+                            <li className="nav-item px-2">
+                              <Link className="nav-link" to="/AIInsights">
+                                <i className="bi bi-lightbulb me-1"></i> AI Insights
+                              </Link>
+                            </li>
+                          </>
+                        )}
                       </>
                     )}
                   </ul>
-                  {/* Right side items only shown if logged in */}
+
+                  {/* Right side items: Username, Notification, and Logout */}
                   {authState.status && (
                     <div className="d-flex align-items-center ms-lg-auto mt-3 mt-lg-0">
+                      {/* Username with Profile tooltip */}
                       <Link className="text-decoration-none me-3" to="/profile" title="Profile">
                         <span className="text-white d-flex align-items-center">
                           <i className="bi bi-person-circle me-1"></i>
                           <span className="d-none d-sm-inline">{authState.username}</span>
                         </span>
                       </Link>
+
+                      {/* Notification Icon */}
                       <div className="me-3">
                         {useSocketNotifications ? (
-                          authState.isAdmin ? <AdminNotificationIcon /> : <UserNotificationIcon />
+                          authState.isAdmin ? (
+                            <AdminNotificationIcon />
+                          ) : (
+                            <UserNotificationIcon />
+                          )
                         ) : (
-                           // Fallback if needed, ensure useNotifications is imported if used here
-                           // <NotificationIcon notifications={notifications} markAsRead={markAsRead} markAllAsRead={markAllAsRead} />
-                           null // Or render nothing if socket is primary
+                          <NotificationIcon
+                            notifications={notifications}
+                            markAsRead={markAsRead}
+                            markAllAsRead={markAllAsRead}
+                          />
                         )}
                       </div>
-                      <button className="btn btn-sm rounded-pill px-3" style={{ backgroundColor: '#FF6B6B', borderColor: '#FF6B6B', color: 'white' }} onClick={logout}>
+
+                      {/* Logout Button */}
+                      <button
+                        className="btn btn-sm rounded-pill px-3"
+                        style={{ backgroundColor: '#FF6B6B', borderColor: '#FF6B6B' }}
+                        onClick={logout}
+                      >
                         <i className="bi bi-box-arrow-right me-1"></i>
                         <span className="d-none d-sm-inline">Logout</span>
                       </button>
@@ -258,48 +305,224 @@ function App() {
             </nav>
           )}
 
-          {/* Add padding only if navbar is showing */}
-          {showNavbar && <div style={{ paddingTop: "80px" }}></div>}
-
-          {/* --- Routes --- */}
+          {!hideNavbarRoutes.includes(location.pathname) && (
+            <div style={{ paddingTop: "80px" }}></div>
+          )}
           <Routes>
-            {/* Public Routes */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/landingPage" element={<LandingPage />} />
+            <Route path="/EventPersonalization" element={<EventPersonalization />} />
+            <Route
+              path="/AdminAIReviewsDashboard"
+              element={
+                authLoading ? (
+                  <LoadingSession />
+                ) : authState.status && authState.isAdmin ? (
+                  <AdminAIReviewsDashboard />
+                ) : (
+                  <Navigate to="/login" />
+                )
+              }
+            />
+            <Route
+              path="/AIReviewsPage"
+              element={
+                authLoading ? (
+                  <LoadingSession />
+                ) : authState.status ? (
+                  <AIReviewsPage />
+                ) : (
+                  <Navigate to="/login" />
+                )
+              }
+            />
+            <Route
+              path="/AIInsights"
+              element={
+                authLoading ? (
+                  <LoadingSession />
+                ) : authState.status ? (
+                  <AIInsights />
+                ) : (
+                  <Navigate to="/login" />
+                )
+              }
+            />
+            <Route
+              path="/PersonalizedRecommendations"
+              element={
+                authLoading ? (
+                  <LoadingSession />
+                ) : authState.status ? (
+                  <PersonalizedRecommendations />
+                ) : (
+                  <Navigate to="/login" />
+                )
+              }
+            />
+            <Route
+              path="/home"
+              element={
+                authLoading ? (
+                  <LoadingSession />
+                ) : authState.status ? (
+                  <Home />
+                ) : (
+                  <Navigate to="/login" />
+                )
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                authLoading ? (
+                  <LoadingSession />
+                ) : authState.isAdmin ? (
+                  <AdminDashboard />
+                ) : (
+                  <Navigate to="/home" />
+                )
+              }
+            />
+            <Route
+              path="/create_event"
+              element={
+                authLoading ? (
+                  <LoadingSession />
+                ) : authState.isAdmin ? (
+                  <CreateEvent />
+                ) : (
+                  <Navigate to="/home" />
+                )
+              }
+            />
             <Route path="/login" element={<Login />} />
+            <Route
+              path="/profile"
+              element={
+                authLoading ? (
+                  <LoadingSession />
+                ) : authState.status ? (
+                  <Profile />
+                ) : (
+                  <Navigate to="/login" />
+                )
+              }
+            />
+            <Route
+              path="/admincalendar"
+              element={
+                authLoading ? (
+                  <LoadingSession />
+                ) : authState.status && authState.isAdmin ? (
+                  <AdminCalendar />
+                ) : (
+                  <Navigate to="/login" />
+                )
+              }
+            />
+            <Route
+              path="/calendar"
+              element={
+                authLoading ? (
+                  <LoadingSession />
+                ) : authState.status ? (
+                  <Calendar />
+                ) : (
+                  <Navigate to="/login" />
+                )
+              }
+            />
             <Route path="/registration" element={<Registration />} />
+            <Route
+              path="/event/:id"
+              element={
+                authLoading ? (
+                  <LoadingSession />
+                ) : authState.status ? (
+                  <Event />
+                ) : (
+                  <Navigate to="/login" />
+                )
+              }
+            />
+            <Route
+              path="/response/:id"
+              element={
+                authLoading ? (
+                  <LoadingSession />
+                ) : authState.status ? (
+                  <Response />
+                ) : (
+                  <Navigate to="/login" />
+                )
+              }
+            />
+            <Route
+              path="/chatbot"
+              element={
+                authLoading ? (
+                  <LoadingSession />
+                ) : authState.status ? (
+                  <Chatbot />
+                ) : (
+                  <Navigate to="/login" />
+                )
+              }
+            />
+            <Route
+              path="/register/:id"
+              element={
+                authLoading ? (
+                  <LoadingSession />
+                ) : authState.status ? (
+                  <EventRegistration />
+                ) : (
+                  <Navigate to="/login" />
+                )
+              }
+            />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
-
-            {/* Routes requiring Login (User or Admin) */}
-            <Route path="/home" element={<ProtectedRouteWrapper><Home /></ProtectedRouteWrapper>} />
-            <Route path="/event/:id" element={<ProtectedRouteWrapper><Event /></ProtectedRouteWrapper>} />
-            <Route path="/profile" element={<ProtectedRouteWrapper><Profile /></ProtectedRouteWrapper>} />
-            <Route path="/calendar" element={<ProtectedRouteWrapper><Calendar /></ProtectedRouteWrapper>} />
-            <Route path="/my-registrations" element={<ProtectedRouteWrapper><MyRegistrations /></ProtectedRouteWrapper>} />
-            <Route path="/register/:id" element={<ProtectedRouteWrapper><EventRegistration /></ProtectedRouteWrapper>} />
-            <Route path="/chatbot" element={<ProtectedRouteWrapper><Chatbot /></ProtectedRouteWrapper>} />
-            {/* These might be okay for non-admins too, depending on requirements */}
-            <Route path="/AIReviewsPage" element={<ProtectedRouteWrapper><AIReviewsPage /></ProtectedRouteWrapper>} />
-            <Route path="/AIInsights" element={<ProtectedRouteWrapper><AIInsights /></ProtectedRouteWrapper>} />
-            <Route path="/EventPersonalization" element={<ProtectedRouteWrapper><EventPersonalization /></ProtectedRouteWrapper>} />
-            <Route path="/PersonalizedRecommendations" element={<ProtectedRouteWrapper><PersonalizedRecommendations /></ProtectedRouteWrapper>} />
-
-            {/* Routes requiring Admin */}
-            <Route path="/admin" element={<ProtectedRouteWrapper adminOnly={true}><AdminDashboard /></ProtectedRouteWrapper>} />
-            <Route path="/create_event" element={<ProtectedRouteWrapper adminOnly={true}><CreateEvent /></ProtectedRouteWrapper>} />
-            <Route path="/admincalendar" element={<ProtectedRouteWrapper adminOnly={true}><AdminCalendar /></ProtectedRouteWrapper>} />
-            <Route path="/response/:id" element={<ProtectedRouteWrapper adminOnly={true}><Response /></ProtectedRouteWrapper>} />
-            <Route path="/admin/edit-event/:id" element={<ProtectedRouteWrapper adminOnly={true}><EditEvent /></ProtectedRouteWrapper>} />
-            <Route path="/admin/registrations" element={<ProtectedRouteWrapper adminOnly={true}><AdminRegistrations /></ProtectedRouteWrapper>} />
-            <Route path="/AdminAIReviewsDashboard" element={<ProtectedRouteWrapper adminOnly={true}><AdminAIReviewsDashboard /></ProtectedRouteWrapper>} />
-
-            {/* Fallback Route */}
+            <Route
+              path="/admin/edit-event/:id"
+              element={
+                authLoading ? (
+                  <LoadingSession />
+                ) : authState.isAdmin ? (
+                  <EditEvent />
+                ) : (
+                  <Navigate to="/" />
+                )
+              }
+            />
+            <Route
+              path="/admin/registrations"
+              element={
+                authLoading ? (
+                  <LoadingSession />
+                ) : authState.isAdmin ? (
+                  <AdminRegistrations />
+                ) : (
+                  <Navigate to="/home" />
+                )
+              }
+            />
+            <Route
+              path="/my-registrations"
+              element={
+                authLoading ? (
+                  <LoadingSession />
+                ) : authState.status ? (
+                  <MyRegistrations />
+                ) : (
+                  <Navigate to="/login" />
+                )
+              }
+            />
             <Route path="*" element={<PageNotFound />} />
           </Routes>
-
-          {/* Floating Chatbot shown only when logged in and not on certain routes */}
-          {authState.status && showNavbar && <FloatingChatbot />}
+          {authState.status && !hideNavbarRoutes.includes(location.pathname) && <FloatingChatbot />}
         </div>
       </NotificationProvider>
     </AuthContext.Provider>
