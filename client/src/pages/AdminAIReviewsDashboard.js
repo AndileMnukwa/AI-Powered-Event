@@ -16,6 +16,7 @@ import {
   Legend,
 } from 'chart.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import API  from '../services/api';
 
 // Register ChartJS components
 ChartJS.register(
@@ -86,14 +87,14 @@ const AdminAIReviewsDashboard = () => {
         return;
       }
 
-      const response = await axios.get('https://ai-powered-event-production.up.railway.app/events', {
+      const response = await API.get('https://ai-powered-event-production.up.railway.app/events', {
         headers: { Authorization: `Bearer ${accessToken}` }
       });
 
       // Process event data to include additional metrics
       const processedEvents = await Promise.all(response.data.map(async (event) => {
         // Fetch reviews for this event
-        const reviewsResponse = await axios.get(`https://ai-powered-event-production.up.railway.app/events/${event.id}`, {
+        const reviewsResponse = await API.get(`https://ai-powered-event-production.up.railway.app/events/${event.id}`, {
           headers: { Authorization: `Bearer ${accessToken}` }
         });
         
@@ -137,7 +138,7 @@ const AdminAIReviewsDashboard = () => {
   const fetchEventReviews = async (eventId) => {
     try {
       const accessToken = localStorage.getItem('accessToken');
-      const response = await axios.get(`https://ai-powered-event-production.up.railway.app/events/${eventId}`, {
+      const response = await API.get(`https://ai-powered-event-production.up.railway.app/events/${eventId}`, {
         headers: { Authorization: `Bearer ${accessToken}` }
       });
       
@@ -170,7 +171,7 @@ const AdminAIReviewsDashboard = () => {
       }
       
       // Fetch reviews for this time period
-      const response = await axios.get(`https://ai-powered-event-production.up.railway.app/events/${eventId}`, {
+      const response = await API.get(`https://ai-powered-event-production.up.railway.app/events/${eventId}`, {
         headers: { Authorization: `Bearer ${accessToken}` }
       });
       
