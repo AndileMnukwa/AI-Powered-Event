@@ -7,6 +7,7 @@ import 'bootstrap-icons/font/bootstrap-icons.min.css';
 import reviewsImage from "../images/reviews.jpg";
 import eventImage from "../images/flex.jpg";
 import BannerSlideshow from '../components/BannerSlideshow';
+import API from '../services/api';
 
 // Add global style reset
 const globalStyle = `
@@ -23,7 +24,7 @@ const LandingPage = () => {
   const [featuredEvents, setFeaturedEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hoveredEventId, setHoveredEventId] = useState(null);
-  
+
   // Animation for reveal on scroll using Intersection Observer instead of scroll events
   const [visibleSections, setVisibleSections] = useState({
     hero: false,
@@ -34,7 +35,8 @@ const LandingPage = () => {
 
   useEffect(() => {
     // Fetch events from API
-    axios.get("https://ai-powered-event-production.up.railway.app/events")
+    API
+      .get("https://ai-powered-event-production.up.railway.app/events")
       .then((response) => {
         // Get only upcoming events and limit to 3
         const today = new Date();
@@ -95,20 +97,20 @@ const LandingPage = () => {
             ...prev,
             [sectionId]: true
           }));
-          
+
           // Once a section is visible, we can stop observing it
           sectionObserver.unobserve(entry.target);
         }
       });
     }, observerOptions);
-    
+
     // Observe each section
     const sections = ['hero-section', 'events-section', 'features-section', 'cta-section'];
     sections.forEach(id => {
       const element = document.getElementById(id);
       if (element) sectionObserver.observe(element);
     });
-    
+
     return () => {
       // Cleanup
       sections.forEach(id => {
@@ -121,15 +123,15 @@ const LandingPage = () => {
   // Function to correct image path (similar to AdminDashboard)
   const getImageUrl = (imagePath) => {
     if (!imagePath) return "/api/placeholder/600/400";
-    
+
     // If the path already starts with http or is a placeholder, return as is
     if (imagePath.startsWith('http') || imagePath.startsWith('/api/placeholder')) return imagePath;
-    
+
     // If the path begins with "/uploads/events/", remove the leading slash
     if (imagePath.startsWith('/uploads/events/')) {
       return `https://ai-powered-event-production.up.railway.app${imagePath}`;
     }
-    
+
     // For any other case, just append the path to the base URL
     return `https://ai-powered-event-production.up.railway.app/${imagePath}`;
   };
@@ -164,22 +166,22 @@ const LandingPage = () => {
 
   // Button component for consistent styling and DRY code
   const Button = ({ primary, children, onClick, className = '' }) => (
-    <button 
+    <button
       className={`btn btn-lg ${className}`}
       onClick={onClick}
       onMouseEnter={primary ? () => setIsHovered(true) : undefined}
       onMouseLeave={primary ? () => setIsHovered(false) : undefined}
       style={{
-        background: primary 
-          ? (isHovered ? '#E04578' : theme.colors.primary) 
+        background: primary
+          ? (isHovered ? '#E04578' : theme.colors.primary)
           : 'transparent',
         color: primary ? 'white' : theme.colors.primary,
         borderRadius: theme.borderRadius.md,
         padding: '0.75rem 2rem',
         fontSize: '1.1rem',
         fontWeight: '600',
-        boxShadow: primary 
-          ? (isHovered ? theme.shadows.md : theme.shadows.sm) 
+        boxShadow: primary
+          ? (isHovered ? theme.shadows.md : theme.shadows.sm)
           : 'none',
         border: primary ? 'none' : `2px solid ${theme.colors.primary}`,
         transition: theme.transitions.default,
@@ -210,7 +212,7 @@ const LandingPage = () => {
         marginTop: "-80px" // Compensate for the global padding
       }}>
         {/* Hero Section - With background image and modern design */}
-        <section 
+        <section
           id="hero-section"
           className="d-flex align-items-center"
           style={{
@@ -233,11 +235,11 @@ const LandingPage = () => {
             background: `linear-gradient(135deg, rgba(13, 27, 64, 0.85) 0%, rgba(255, 90, 142, 0.75) 100%)`,
             zIndex: 1
           }}></div>
-          
+
           <div className="container position-relative" style={{ zIndex: 2 }}>
             <div className="row align-items-center">
               <div className="col-lg-6 text-white">
-                <div style={{ 
+                <div style={{
                   background: 'rgba(255, 255, 255, 0.1)',
                   backdropFilter: 'blur(10px)',
                   padding: '2.5rem',
@@ -253,7 +255,7 @@ const LandingPage = () => {
                   }}>
                     Experience Events Through <span style={{ color: theme.colors.primary }}>Vibe</span>Catcher
                   </h1>
-                  
+
                   <p className="lead mb-5" style={{
                     color: 'rgba(255, 255, 255, 0.9)',
                     fontSize: '1.25rem',
@@ -261,14 +263,14 @@ const LandingPage = () => {
                   }}>
                     VibeCatcher transforms how you discover, experience, and remember events with cutting-edge artificial intelligence that personalizes every moment.
                   </p>
-                  
+
                   {/* Updated buttons for clearer navigation */}
                   <div className="d-flex flex-column flex-sm-row gap-3">
                     <Button primary onClick={() => navigate('/registration')}>
                       Register
                     </Button>
-                    <button 
-                      className="btn btn-lg" 
+                    <button
+                      className="btn btn-lg"
                       onClick={() => navigate('/login')}
                       style={{
                         background: 'rgba(255, 255, 255, 0.2)',
@@ -287,34 +289,34 @@ const LandingPage = () => {
                   </div>
                 </div>
               </div>
-              
+
               {/* Update this section in your LandingPage component */}
-<div className="col-lg-6 d-none d-lg-block d-flex align-items-center justify-content-center">
-  <div className="position-relative" style={{ 
-    width: '100%',
-    maxWidth: '500px',
-    aspectRatio: '1/1',
-    margin: '0 auto'
-  }}>
-    <BannerSlideshow theme={theme} isCircular={true} />
-  </div>
-</div>
+              <div className="col-lg-6 d-none d-lg-block d-flex align-items-center justify-content-center">
+                <div className="position-relative" style={{
+                  width: '100%',
+                  maxWidth: '500px',
+                  aspectRatio: '1/1',
+                  margin: '0 auto'
+                }}>
+                  <BannerSlideshow theme={theme} isCircular={true} />
+                </div>
+              </div>
             </div>
           </div>
-          
+
           {/* Animated scroll indicator */}
           <div className="position-absolute bottom-0 start-50 translate-middle-x mb-4" style={{ zIndex: 2 }}>
             <a href="#events-section" className="text-white text-decoration-none">
               <div className="d-flex flex-column align-items-center">
                 <span className="mb-2">Scroll to explore</span>
-                <i className="bi bi-chevron-down" style={{ 
-                  fontSize: '1.5rem', 
-                  animation: 'bounce 2s infinite' 
+                <i className="bi bi-chevron-down" style={{
+                  fontSize: '1.5rem',
+                  animation: 'bounce 2s infinite'
                 }}></i>
               </div>
             </a>
           </div>
-          
+
           {/* Add animation for the scroll indicator */}
           <style jsx>{`
             @keyframes bounce {
@@ -340,7 +342,7 @@ const LandingPage = () => {
             backgroundImage: 'radial-gradient(circle at 20% 90%, rgba(255, 90, 142, 0.1) 0%, transparent 40%), radial-gradient(circle at 80% 30%, rgba(65, 201, 226, 0.1) 0%, transparent 40%)',
             zIndex: 1
           }}></div>
-          
+
           <div className="container position-relative" style={{ zIndex: 2 }}>
             <div className="row mb-5">
               <div className="col-lg-6">
@@ -362,7 +364,7 @@ const LandingPage = () => {
                 </p>
               </div>
               <div className="col-lg-6 d-flex justify-content-lg-end align-items-end">
-                <button 
+                <button
                   className="btn btn-lg"
                   onClick={() => navigate('/events')}
                   style={{
@@ -379,7 +381,7 @@ const LandingPage = () => {
                 </button>
               </div>
             </div>
-            
+
             {loading ? (
               <div className="d-flex justify-content-center w-100 py-5">
                 <div className="spinner-border" style={{ color: theme.colors.primary }} role="status">
@@ -389,18 +391,18 @@ const LandingPage = () => {
             ) : (
               <div className="row">
                 {featuredEvents.map((event, index) => (
-                  <div 
-                    className="col-lg-4 col-md-6 mb-4" 
+                  <div
+                    className="col-lg-4 col-md-6 mb-4"
                     key={event.id}
-                    style={{ 
-                      transform: `translateY(${index * 20}px)`, 
-                      zIndex: 3 - index 
+                    style={{
+                      transform: `translateY(${index * 20}px)`,
+                      zIndex: 3 - index
                     }}
                   >
                     <div
                       className="event-card position-relative"
                       onClick={() => navigate(`/event/${event.id}`)}
-                      style={{ 
+                      style={{
                         cursor: "pointer",
                         borderRadius: '16px',
                         overflow: 'hidden',
@@ -412,7 +414,7 @@ const LandingPage = () => {
                       onMouseLeave={() => setHoveredEventId(null)}
                     >
                       {/* Full height background image */}
-                      <div style={{ 
+                      <div style={{
                         position: 'absolute',
                         top: 0,
                         left: 0,
@@ -420,17 +422,17 @@ const LandingPage = () => {
                         height: '100%',
                         zIndex: 1
                       }}>
-                        <img 
-                          src={getImageUrl(event.image)} 
+                        <img
+                          src={getImageUrl(event.image)}
                           alt={event.title}
-                          style={{ 
-                            width: '100%', 
-                            height: '100%', 
+                          style={{
+                            width: '100%',
+                            height: '100%',
                             objectFit: 'cover',
                             transition: 'transform 0.6s ease'
                           }}
                         />
-                        <div style={{ 
+                        <div style={{
                           position: 'absolute',
                           top: 0,
                           left: 0,
@@ -440,12 +442,12 @@ const LandingPage = () => {
                           zIndex: 2
                         }}></div>
                       </div>
-                      
+
                       {/* Content at the bottom of the card */}
-                      <div style={{ 
-                        position: 'absolute', 
-                        bottom: 0, 
-                        left: 0, 
+                      <div style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
                         width: '100%',
                         padding: '30px',
                         zIndex: 3,
@@ -454,7 +456,7 @@ const LandingPage = () => {
                         transition: 'transform 0.5s ease'
                       }}>
                         {/* Category Badge */}
-                        <span className="badge mb-3" style={{ 
+                        <span className="badge mb-3" style={{
                           backgroundColor: theme.colors.primary,
                           color: 'white',
                           padding: '8px 15px',
@@ -467,10 +469,10 @@ const LandingPage = () => {
                         }}>
                           {event.category || "Event"}
                         </span>
-                        
+
                         <h3 className="fw-bold mb-3">{event.title}</h3>
-                        
-                        <div style={{ 
+
+                        <div style={{
                           height: hoveredEventId === event.id ? 'auto' : '0',
                           opacity: hoveredEventId === event.id ? 1 : 0,
                           overflow: 'hidden',
@@ -488,8 +490,8 @@ const LandingPage = () => {
                             <i className="bi bi-geo-alt me-2"></i>
                             <span>{event.location}</span>
                           </div>
-                          
-                          <button 
+
+                          <button
                             className="btn btn-sm mt-2"
                             style={{
                               background: 'white',
@@ -505,7 +507,7 @@ const LandingPage = () => {
                           </button>
                         </div>
                       </div>
-                      
+
                       {/* Date Chip */}
                       <div style={{
                         position: 'absolute',
@@ -534,11 +536,11 @@ const LandingPage = () => {
               </div>
             )}
           </div>
-          
+
           {/* Floating decorative elements */}
-          <div className="position-absolute" style={{ 
-            bottom: '10%', 
-            left: '5%', 
+          <div className="position-absolute" style={{
+            bottom: '10%',
+            left: '5%',
             width: '150px',
             height: '150px',
             borderRadius: '50%',
@@ -546,10 +548,10 @@ const LandingPage = () => {
             opacity: 0.1,
             zIndex: 1
           }}></div>
-          
-          <div className="position-absolute" style={{ 
-            top: '15%', 
-            right: '8%', 
+
+          <div className="position-absolute" style={{
+            top: '15%',
+            right: '8%',
             width: '100px',
             height: '100px',
             borderRadius: '50%',
@@ -558,9 +560,9 @@ const LandingPage = () => {
             zIndex: 1
           }}></div>
         </section>
-        
+
         {/* Features Section */}
-        <section 
+        <section
           id="features-section"
           className="py-5"
           style={{
@@ -612,9 +614,9 @@ const LandingPage = () => {
                 }
               ].map((card, index) => (
                 <div className="col-lg-6 col-md-6 mb-4" key={index}>
-                  <div 
-                    className="card shadow-sm border-0 rounded-lg h-100" 
-                    style={{ 
+                  <div
+                    className="card shadow-sm border-0 rounded-lg h-100"
+                    style={{
                       overflow: 'hidden',
                       cursor: 'pointer',
                       transition: theme.transitions.default
@@ -636,8 +638,8 @@ const LandingPage = () => {
                         {card.description}
                       </p>
                       <div className="mt-3">
-                        <button 
-                          className="btn btn-sm" 
+                        <button
+                          className="btn btn-sm"
                           style={{
                             background: theme.colors.primary,
                             color: 'white',
@@ -660,7 +662,7 @@ const LandingPage = () => {
         </section>
 
         {/* Call to Action Section */}
-        <section 
+        <section
           id="cta-section"
           className="py-5 text-center"
           style={{
@@ -675,11 +677,11 @@ const LandingPage = () => {
               Register now to start exploring and experiencing events powered by AI!
             </p>
             <div className="d-flex flex-wrap justify-content-center gap-3">
-              <button 
-                className="btn btn-lg" 
+              <button
+                className="btn btn-lg"
                 onClick={() => navigate('/register')}
                 style={{
-                  background: 'white', 
+                  background: 'white',
                   color: theme.colors.primary,
                   padding: '1rem 3rem',
                   borderRadius: theme.borderRadius.md,
@@ -690,11 +692,11 @@ const LandingPage = () => {
               >
                 Register
               </button>
-              <button 
-                className="btn btn-lg" 
+              <button
+                className="btn btn-lg"
                 onClick={() => navigate('/login')}
                 style={{
-                  background: 'transparent', 
+                  background: 'transparent',
                   color: 'white',
                   padding: '1rem 3rem',
                   borderRadius: theme.borderRadius.md,
