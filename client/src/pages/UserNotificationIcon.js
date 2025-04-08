@@ -63,7 +63,7 @@ const UserNotificationIcon = () => {
 
     fetchUserNotifications();
 
-    socketRef.current = io(API.defaults.baseURL);
+    socketRef.current = io(config.API_BASE_URL);
 
     socketRef.current.on("connect", () => {
       const accessToken = localStorage.getItem("accessToken");
