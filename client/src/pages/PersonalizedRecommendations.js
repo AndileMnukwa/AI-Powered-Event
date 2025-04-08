@@ -34,7 +34,7 @@ const PersonalizedRecommendations = () => {
         }
 
         // Fetch user profile
-        const profileResponse = await fetch('http://localhost:3001/api/user/profile', {
+        const profileResponse = await fetch('https://ai-powered-event-production.up.railway.app/api/user/profile', {
           method: 'GET',
           headers: { 
             'Authorization': `Bearer ${token}`,
@@ -59,7 +59,7 @@ const PersonalizedRecommendations = () => {
           ...(interests.length && { interests: interests.join(',') })
         });
 
-        const recommendationsResponse = await fetch(`http://localhost:3001/api/recommendations?${queryParams}`, {
+        const recommendationsResponse = await fetch(`https://ai-powered-event-production.up.railway.app/api/recommendations?${queryParams}`, {
           method: 'GET',
           headers: { 
             'Authorization': `Bearer ${token}`,
@@ -193,7 +193,7 @@ const PersonalizedRecommendations = () => {
                   <img 
                     src={event.image.startsWith('http') 
                       ? event.image 
-                      : `http://localhost:3001${event.image}`
+                      : `https://ai-powered-event-production.up.railway.app${event.image}`
                     } 
                     className="card-img-top" 
                     alt={event.title}

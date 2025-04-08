@@ -27,7 +27,7 @@ export default function MyRegistrations() {
     const fetchRegistrations = async () => {
       setLoading(true);
       try {
-        const response = await axios.get('http://localhost:3001/registrations/user/me', {
+        const response = await axios.get('https://ai-powered-event-production.up.railway.app/registrations/user/me', {
           headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` }
         });
         

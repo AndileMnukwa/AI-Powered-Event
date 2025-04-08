@@ -79,7 +79,7 @@ function ResetPassword() {
     setMessage(null);
     
     try {
-      const { data } = await axios.post(`http://localhost:3001/auth/reset-password/${token}`, { 
+      const { data } = await axios.post(`https://ai-powered-event-production.up.railway.app/auth/reset-password/${token}`, { 
         password 
       });
       

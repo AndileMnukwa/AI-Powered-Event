@@ -127,11 +127,11 @@ const LandingPage = () => {
     
     // If the path begins with "/uploads/events/", remove the leading slash
     if (imagePath.startsWith('/uploads/events/')) {
-      return `http://localhost:3001${imagePath}`;
+      return `https://ai-powered-event-production.up.railway.app${imagePath}`;
     }
     
     // For any other case, just append the path to the base URL
-    return `http://localhost:3001/${imagePath}`;
+    return `https://ai-powered-event-production.up.railway.app/${imagePath}`;
   };
 
   // Theming with design tokens

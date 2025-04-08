@@ -69,7 +69,7 @@ function EditEvent() {
     const fetchEventData = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`http://localhost:3001/events/${id}`);
+        const response = await axios.get(`https://ai-powered-event-production.up.railway.app/events/${id}`);
         const eventData = response.data.event;
         
         if (!eventData) {
@@ -126,10 +126,10 @@ function EditEvent() {
     if (imagePath.startsWith('http')) return imagePath;
     
     if (imagePath.startsWith('/uploads/events/')) {
-      return `http://localhost:3001${imagePath}`;
+      return `https://ai-powered-event-production.up.railway.app${imagePath}`;
     }
     
-    return `http://localhost:3001/${imagePath}`;
+    return `https://ai-powered-event-production.up.railway.app/${imagePath}`;
   };
 
   const handleImageChange = (e) => {
@@ -214,7 +214,7 @@ function EditEvent() {
       }
 
       // Update event with form data
-      await axios.put(`http://localhost:3001/events/${id}`, formData, {
+      await axios.put(`https://ai-powered-event-production.up.railway.app/events/${id}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${accessToken}`

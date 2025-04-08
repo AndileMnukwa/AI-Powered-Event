@@ -86,14 +86,14 @@ const AdminAIReviewsDashboard = () => {
         return;
       }
 
-      const response = await axios.get('http://localhost:3001/events', {
+      const response = await axios.get('https://ai-powered-event-production.up.railway.app/events', {
         headers: { Authorization: `Bearer ${accessToken}` }
       });
 
       // Process event data to include additional metrics
       const processedEvents = await Promise.all(response.data.map(async (event) => {
         // Fetch reviews for this event
-        const reviewsResponse = await axios.get(`http://localhost:3001/events/${event.id}`, {
+        const reviewsResponse = await axios.get(`https://ai-powered-event-production.up.railway.app/events/${event.id}`, {
           headers: { Authorization: `Bearer ${accessToken}` }
         });
         
@@ -137,7 +137,7 @@ const AdminAIReviewsDashboard = () => {
   const fetchEventReviews = async (eventId) => {
     try {
       const accessToken = localStorage.getItem('accessToken');
-      const response = await axios.get(`http://localhost:3001/events/${eventId}`, {
+      const response = await axios.get(`https://ai-powered-event-production.up.railway.app/events/${eventId}`, {
         headers: { Authorization: `Bearer ${accessToken}` }
       });
       
@@ -170,7 +170,7 @@ const AdminAIReviewsDashboard = () => {
       }
       
       // Fetch reviews for this time period
-      const response = await axios.get(`http://localhost:3001/events/${eventId}`, {
+      const response = await axios.get(`https://ai-powered-event-production.up.railway.app/events/${eventId}`, {
         headers: { Authorization: `Bearer ${accessToken}` }
       });
       
@@ -290,7 +290,7 @@ const AdminAIReviewsDashboard = () => {
       const aiResponse = "Thank you for your feedback! We appreciate your input and will use it to improve our future events.";
       
       // Send response to the API
-      await axios.put(`http://localhost:3001/reviews/respond/${reviewId}`, 
+      await axios.put(`https://ai-powered-event-production.up.railway.app/reviews/respond/${reviewId}`, 
         { adminResponse: aiResponse },
         { headers: { Authorization: `Bearer ${accessToken}` }}
       );

@@ -93,17 +93,17 @@ export default function Event() {
 
     // If the path begins with "/uploads/events/", ensure it's properly formed
     if (imagePath.startsWith('/uploads/events/')) {
-      return `http://localhost:3001${imagePath}`;
+      return `https://ai-powered-event-production.up.railway.app${imagePath}`;
     }
 
     // For any other case, just append the path to the base URL
-    return `http://localhost:3001/${imagePath}`;
+    return `https://ai-powered-event-production.up.railway.app/${imagePath}`;
   };
 
   useEffect(() => {
     const fetchEventDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:3001/events/${id}`);
+        const response = await axios.get(`https://ai-powered-event-production.up.railway.app/${id}`);
         if (response.data.event) {
           setEventData(response.data.event);
 
@@ -151,7 +151,7 @@ export default function Event() {
 
       // Send share request to backend
       const response = await axios.post(
-        `http://localhost:3001/social/share`,
+        `https://ai-powered-event-production.up.railway.app/social/share`,
         shareContent,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -239,14 +239,14 @@ export default function Event() {
     try {
       let sentiment = "neutral";
       try {
-        const { data: sentimentData } = await axios.post("http://localhost:3001/sentiment", { text: newReview });
+        const { data: sentimentData } = await axios.post("https://ai-powered-event-production.up.railway.app/sentiment", { text: newReview });
         sentiment = sentimentData.sentiment;
       } catch (err) {
         console.warn("Sentiment API not found, skipping sentiment analysis.");
       }
 
       const { data: reviewResponse } = await axios.post(
-        "http://localhost:3001/reviews",
+        "https://ai-powered-event-production.up.railway.app/reviews",
         { review_text: newReview, rating, eventId: id, sentiment },
         { headers: { Authorization: `Bearer ${accessToken}` } },
       );
@@ -261,7 +261,7 @@ export default function Event() {
         // Create notification for admins about the new review
         try {
           await axios.post(
-            "http://localhost:3001/notifications",
+            "https://ai-powered-event-production.up.railway.app/notifications",
             {
               message: `New review for event "${eventData?.title}"`,
               type: "review",
@@ -297,9 +297,9 @@ export default function Event() {
 
     // Set OAuth endpoints
     const oauthEndpoints = {
-      facebook: 'http://localhost:3001/auth/facebook',
-      linkedin: 'http://localhost:3001/auth/linkedin',
-      twitter: 'http://localhost:3001/auth/twitter'
+      facebook: 'https://ai-powered-event-production.up.railway.app/auth/facebook',
+      linkedin: 'https://ai-powered-event-production.up.railway.app/auth/linkedin',
+      twitter: 'https://ai-powered-event-production.up.railway.app/auth/twitter'
     };
 
     // Calculate popup position to be centered
@@ -356,7 +356,7 @@ export default function Event() {
     }
 
     try {
-      await axios.delete(`http://localhost:3001/reviews/${reviewId}`, {
+      await axios.delete(`https://ai-powered-event-production.up.railway.app/reviews/${reviewId}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
 
@@ -377,7 +377,7 @@ export default function Event() {
     }
 
     try {
-      await axios.delete(`http://localhost:3001/events/${eventId}`, {
+      await axios.delete(`https://ai-powered-event-production.up.railway.app/events/${eventId}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
 

@@ -48,7 +48,7 @@ const AIInsights = () => {
         const token = localStorage.getItem('accessToken');
         
         // FIXED: Use the same API endpoint as AdminAIReviewsDashboard
-        const response = await axios.get('http://localhost:3001/events', {
+        const response = await axios.get('https://ai-powered-event-production.up.railway.app/events', {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -59,7 +59,7 @@ const AIInsights = () => {
         // Process event data to include additional metrics like in AdminAIReviewsDashboard
         const processedEvents = await Promise.all(response.data.map(async (event) => {
           // Fetch reviews for this event
-          const reviewsResponse = await axios.get(`http://localhost:3001/events/${event.id}`, {
+          const reviewsResponse = await axios.get(`https://ai-powered-event-production.up.railway.app/events/${event.id}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           
@@ -119,7 +119,7 @@ const AIInsights = () => {
         
         // First try to fetch from the expected endpoint
         try {
-          const response = await axios.get(`http://localhost:3001/admin/analytics/reviews/insights/${selectedEventId}`, {
+          const response = await axios.get(`https://ai-powered-event-production.up.railway.app/admin/analytics/reviews/insights/${selectedEventId}`, {
             headers: {
               Authorization: `Bearer ${token}`
             }
@@ -134,7 +134,7 @@ const AIInsights = () => {
           console.log('Primary endpoint failed, trying fallback', error);
           
           // Fallback: Generate insights from reviews if the endpoint fails
-          const reviewsResponse = await axios.get(`http://localhost:3001/events/${selectedEventId}`, {
+          const reviewsResponse = await axios.get(`https://ai-powered-event-production.up.railway.app/events/${selectedEventId}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           

@@ -50,7 +50,7 @@ function ForgotPassword() {
     setMessage(null);
     
     try {
-      const { data } = await axios.post("http://localhost:3001/auth/forgot-password", { 
+      const { data } = await axios.post("https://ai-powered-event-production.up.railway.app/auth/forgot-password", { 
         email: email.trim() 
       });
       

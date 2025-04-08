@@ -23,7 +23,7 @@ const PaymentForm = ({ eventId, registrationData, onSuccess, onError }) => {
     // Create payment intent on the server
     try {
       const { data: { clientSecret } } = await axios.post(
-        'http://localhost:3001/payments/create-intent',
+        'https://ai-powered-event-production.up.railway.app/create-intent',
         {
           eventId,
           amount: registrationData.totalAmount * 100, // convert to cents
@@ -52,7 +52,7 @@ const PaymentForm = ({ eventId, registrationData, onSuccess, onError }) => {
       } else if (paymentIntent.status === 'succeeded') {
         // Update registration with payment information
         await axios.put(
-          `http://localhost:3001/registrations/${registrationData.id}/payment`,
+          `https://ai-powered-event-production.up.railway.app/registrations/${registrationData.id}/payment`,
           {
             paymentStatus: 'completed',
             paymentMethod: 'credit_card',
