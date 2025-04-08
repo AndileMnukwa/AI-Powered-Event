@@ -1,10 +1,10 @@
 import { useContext, useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import { AuthContext } from "../helpers/AuthContext";
 import { format } from "date-fns";
+import API from "..services/api";
 
 export default function Event() {
   // Custom colors
@@ -103,7 +103,7 @@ export default function Event() {
   useEffect(() => {
     const fetchEventDetails = async () => {
       try {
-        const response = await axios.get(`https://ai-powered-event-production.up.railway.app/${id}`);
+        const response = await API.get(`https://ai-powered-event-production.up.railway.app/${id}`);
         if (response.data.event) {
           setEventData(response.data.event);
 
@@ -150,7 +150,7 @@ export default function Event() {
       };
 
       // Send share request to backend
-      const response = await axios.post(
+      const response = await API.post(
         `https://ai-powered-event-production.up.railway.app/social/share`,
         shareContent,
         { headers: { Authorization: `Bearer ${token}` } }
@@ -239,13 +239,13 @@ export default function Event() {
     try {
       let sentiment = "neutral";
       try {
-        const { data: sentimentData } = await axios.post("https://ai-powered-event-production.up.railway.app/sentiment", { text: newReview });
+        const { data: sentimentData } = await API.post("https://ai-powered-event-production.up.railway.app/sentiment", { text: newReview });
         sentiment = sentimentData.sentiment;
       } catch (err) {
         console.warn("Sentiment API not found, skipping sentiment analysis.");
       }
 
-      const { data: reviewResponse } = await axios.post(
+      const { data: reviewResponse } = await API.post(
         "https://ai-powered-event-production.up.railway.app/reviews",
         { review_text: newReview, rating, eventId: id, sentiment },
         { headers: { Authorization: `Bearer ${accessToken}` } },
@@ -260,7 +260,7 @@ export default function Event() {
 
         // Create notification for admins about the new review
         try {
-          await axios.post(
+          await API.post(
             "https://ai-powered-event-production.up.railway.app/notifications",
             {
               message: `New review for event "${eventData?.title}"`,
@@ -356,7 +356,7 @@ export default function Event() {
     }
 
     try {
-      await axios.delete(`https://ai-powered-event-production.up.railway.app/reviews/${reviewId}`, {
+      await API.delete(`https://ai-powered-event-production.up.railway.app/reviews/${reviewId}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
 
@@ -377,7 +377,7 @@ export default function Event() {
     }
 
     try {
-      await axios.delete(`https://ai-powered-event-production.up.railway.app/events/${eventId}`, {
+      await API.delete(`https://ai-powered-event-production.up.railway.app/events/${eventId}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
 
