@@ -152,8 +152,11 @@ function App() {
           {!hideNavbarRoutes.includes(location.pathname) && (
             <nav className="navbar navbar-expand-lg navbar-dark fixed-top shadow-sm" style={{ backgroundColor: '#001F3F' }}>
               <div className="container">
-                {/* Brand/Logo */}
-                <Link className="navbar-brand d-flex align-items-center" to="/">
+                {/* Brand/Logo - direct to different paths based on auth status */}
+                <Link 
+                  className="navbar-brand d-flex align-items-center" 
+                  to={authState.status ? (authState.isAdmin ? "/admin" : "/home") : "/"}
+                >
                   <i className="bi bi-calendar-event fs-4 me-2"></i>
                   <span className="fw-bold">VibeCatcher</span>
                 </Link>
@@ -309,8 +312,30 @@ function App() {
             <div style={{ paddingTop: "80px" }}></div>
           )}
           <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/landingPage" element={<LandingPage />} />
+            <Route 
+              path="/" 
+              element={
+                authLoading ? (
+                  <LoadingSession />
+                ) : authState.status ? (
+                  <Navigate to={authState.isAdmin ? "/admin" : "/home"} />
+                ) : (
+                  <LandingPage />
+                )
+              } 
+            />
+            <Route 
+              path="/landingPage" 
+              element={
+                authLoading ? (
+                  <LoadingSession />
+                ) : authState.status ? (
+                  <Navigate to={authState.isAdmin ? "/admin" : "/home"} />
+                ) : (
+                  <LandingPage />
+                )
+              } 
+            />
             <Route path="/EventPersonalization" element={<EventPersonalization />} />
             <Route
               path="/AdminAIReviewsDashboard"
@@ -324,8 +349,8 @@ function App() {
                 )
               }
             />
-            <Route
-              path="/AIReviewsPage"
+            <Route 
+              path="/AIReviewsPage" 
               element={
                 authLoading ? (
                   <LoadingSession />
@@ -334,10 +359,10 @@ function App() {
                 ) : (
                   <Navigate to="/login" />
                 )
-              }
+              } 
             />
-            <Route
-              path="/AIInsights"
+            <Route 
+              path="/AIInsights" 
               element={
                 authLoading ? (
                   <LoadingSession />
@@ -346,10 +371,10 @@ function App() {
                 ) : (
                   <Navigate to="/login" />
                 )
-              }
+              } 
             />
-            <Route
-              path="/PersonalizedRecommendations"
+            <Route 
+              path="/PersonalizedRecommendations" 
               element={
                 authLoading ? (
                   <LoadingSession />
@@ -358,10 +383,10 @@ function App() {
                 ) : (
                   <Navigate to="/login" />
                 )
-              }
+              } 
             />
-            <Route
-              path="/home"
+            <Route 
+              path="/home" 
               element={
                 authLoading ? (
                   <LoadingSession />
@@ -370,10 +395,10 @@ function App() {
                 ) : (
                   <Navigate to="/login" />
                 )
-              }
+              } 
             />
-            <Route
-              path="/admin"
+            <Route 
+              path="/admin" 
               element={
                 authLoading ? (
                   <LoadingSession />
@@ -382,10 +407,10 @@ function App() {
                 ) : (
                   <Navigate to="/home" />
                 )
-              }
+              } 
             />
-            <Route
-              path="/create_event"
+            <Route 
+              path="/create_event" 
               element={
                 authLoading ? (
                   <LoadingSession />
@@ -394,11 +419,11 @@ function App() {
                 ) : (
                   <Navigate to="/home" />
                 )
-              }
+              } 
             />
             <Route path="/login" element={<Login />} />
-            <Route
-              path="/profile"
+            <Route 
+              path="/profile" 
               element={
                 authLoading ? (
                   <LoadingSession />
@@ -407,10 +432,10 @@ function App() {
                 ) : (
                   <Navigate to="/login" />
                 )
-              }
+              } 
             />
-            <Route
-              path="/admincalendar"
+            <Route 
+              path="/admincalendar" 
               element={
                 authLoading ? (
                   <LoadingSession />
@@ -419,10 +444,10 @@ function App() {
                 ) : (
                   <Navigate to="/login" />
                 )
-              }
+              } 
             />
-            <Route
-              path="/calendar"
+            <Route 
+              path="/calendar" 
               element={
                 authLoading ? (
                   <LoadingSession />
@@ -431,11 +456,11 @@ function App() {
                 ) : (
                   <Navigate to="/login" />
                 )
-              }
+              } 
             />
             <Route path="/registration" element={<Registration />} />
-            <Route
-              path="/event/:id"
+            <Route 
+              path="/event/:id" 
               element={
                 authLoading ? (
                   <LoadingSession />
@@ -444,10 +469,10 @@ function App() {
                 ) : (
                   <Navigate to="/login" />
                 )
-              }
+              } 
             />
-            <Route
-              path="/response/:id"
+            <Route 
+              path="/response/:id" 
               element={
                 authLoading ? (
                   <LoadingSession />
@@ -456,10 +481,10 @@ function App() {
                 ) : (
                   <Navigate to="/login" />
                 )
-              }
+              } 
             />
-            <Route
-              path="/chatbot"
+            <Route 
+              path="/chatbot" 
               element={
                 authLoading ? (
                   <LoadingSession />
@@ -468,10 +493,10 @@ function App() {
                 ) : (
                   <Navigate to="/login" />
                 )
-              }
+              } 
             />
-            <Route
-              path="/register/:id"
+            <Route 
+              path="/register/:id" 
               element={
                 authLoading ? (
                   <LoadingSession />
@@ -480,12 +505,12 @@ function App() {
                 ) : (
                   <Navigate to="/login" />
                 )
-              }
+              } 
             />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
-            <Route
-              path="/admin/edit-event/:id"
+            <Route 
+              path="/admin/edit-event/:id" 
               element={
                 authLoading ? (
                   <LoadingSession />
@@ -494,7 +519,7 @@ function App() {
                 ) : (
                   <Navigate to="/" />
                 )
-              }
+              } 
             />
             <Route
               path="/admin/registrations"
