@@ -4,7 +4,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import { AuthContext } from "../helpers/AuthContext";
 import { format } from "date-fns";
-import API from "..services/api";
+import API from '../services/api';
 
 export default function Event() {
   // Custom colors
