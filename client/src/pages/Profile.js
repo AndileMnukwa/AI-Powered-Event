@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { format } from "date-fns";
+import API from '../services/api';
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -68,11 +69,11 @@ const Profile = () => {
     
     // If the path begins with "/uploads/events/", remove the leading slash
     if (imagePath.startsWith('/uploads/events/')) {
-      return `http://localhost:3001${imagePath}`;
+      return `https://ai-powered-event-production.up.railway.app/${imagePath}`;
     }
     
     // For any other case, just append the path to the base URL
-    return `http://localhost:3001/${imagePath}`;
+    return `https://ai-powered-event-production.up.railway.app/${imagePath}`;
   };
 
   useEffect(() => {
@@ -83,7 +84,7 @@ const Profile = () => {
           throw new Error("Authentication token missing");
         }
 
-        const response = await axios.get("http://localhost:3001/api/user/profile", {
+        const response = await API.get("https://ai-powered-event-production.up.railway.app/api/user/profile", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -147,7 +148,7 @@ const Profile = () => {
       try {
         // This endpoint should return events created by the current user
         // You may need to adjust based on your actual API
-        const response = await axios.get("http://localhost:3001/events", {
+        const response = await API.get("https://ai-powered-event-production.up.railway.app/events", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -201,7 +202,7 @@ const Profile = () => {
         profileData.password = newPassword;
       }
 
-      const response = await axios.put("http://localhost:3001/api/user/profile", profileData, {
+      const response = await axios.put("https://ai-powered-event-production.up.railway.app/api/user/profile", profileData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -224,7 +225,7 @@ const Profile = () => {
   //   if (!review.eventId) return null;
     
   //   try {
-  //     const response = await axios.get(`http://localhost:3001/events/${review.eventId}`);
+  //     const response = await API.get(`https://ai-powered-event-production.up.railway.app/events/${review.eventId}`);
   //     return response.data;
   //   } catch (err) {
   //     console.error(`Error fetching event for review ${review.id}:`, err);
