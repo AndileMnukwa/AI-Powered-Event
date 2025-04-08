@@ -116,11 +116,11 @@ export default function Home() {
 
     // If the path begins with "/uploads/events/", ensure it's properly formed
     if (imagePath.startsWith('/uploads/events/')) {
-      return `ai-powered-event-production.up.railway.app${imagePath}`;
+      return `https://ai-powered-event-production.up.railway.app${imagePath}`;
     }
 
     // For any other case, just append the path to the base URL
-    return `ai-powered-event-production.up.railway.app/${imagePath}`;
+    return `https://ai-powered-event-production.up.railway.app/${imagePath}`;
   };
 
   const scrollToTop = () => {
