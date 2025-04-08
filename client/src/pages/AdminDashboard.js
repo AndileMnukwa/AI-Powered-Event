@@ -7,6 +7,7 @@ import "bootstrap/dist/css/bootstrap.min.css"
 import "bootstrap-icons/font/bootstrap-icons.min.css"
 import { AuthContext } from "../helpers/AuthContext"
 import { format } from "date-fns"
+import API from "../services/api"
 
 export default function AdminDashboard() {
   const [listOfEvents, setListOfEvents] = useState([])
@@ -22,8 +23,8 @@ export default function AdminDashboard() {
     if (!authState.status || !authState.isAdmin) {
       navigate("/login")
     } else {
-      axios
-        .get("http://localhost:3001/events")
+      API
+        .get("https://ai-powered-event-production.up.railway.app/events")
         .then((response) => {
           setListOfEvents(response.data)
           setLoading(false)
@@ -70,11 +71,11 @@ export default function AdminDashboard() {
     
     // If the path begins with "/uploads/events/", remove the leading slash
     if (imagePath.startsWith('/uploads/events/')) {
-      return `http://localhost:3001${imagePath}`;
+      return `https://ai-powered-event-production.up.railway.app/${imagePath}`;
     }
     
     // For any other case, just append the path to the base URL
-    return `http://localhost:3001/${imagePath}`;
+    return `https://ai-powered-event-production.up.railway.app/${imagePath}`;
   };
 
   if (loading) {

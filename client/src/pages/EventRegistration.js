@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../helpers/AuthContext';
 import { format } from 'date-fns';
+import API  from '../services/api';
 
 function EventRegistration() {
   const { id } = useParams();
@@ -38,7 +39,7 @@ function EventRegistration() {
   useEffect(() => {
     const fetchEventDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:3001/events/${id}`);
+        const response = await API.get(`https://ai-powered-event-production.up.railway.app/events/${id}`);
         if (response.data.event) {
           setEvent(response.data.event);
           
@@ -75,7 +76,7 @@ function EventRegistration() {
       // Optional: fetch more user details if available
       const fetchUserProfile = async () => {
         try {
-          const response = await axios.get('http://localhost:3001/api/user/profile', {
+          const response = await API.get('https://ai-powered-event-production.up.railway.app/api/user/profile', {
             headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` }
           });
           
@@ -135,8 +136,8 @@ function EventRegistration() {
       }
       
       // Submit registration
-      const response = await axios.post(
-        'http://localhost:3001/registrations',
+      const response = await API.post(
+        'https://ai-powered-event-production.up.railway.app/registrations',
         registrationPayload,
         authState.status ? {
           headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` }

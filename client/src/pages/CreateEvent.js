@@ -9,6 +9,7 @@ import "bootstrap/dist/css/bootstrap.min.css"
 import { FaCalendarAlt, FaMapMarkerAlt, FaFileAlt, FaPlus, FaHeart, FaClock, FaTag, 
          FaImage, FaDollarSign, FaTicketAlt, FaCalendarCheck, FaUsers, FaUserPlus } from "react-icons/fa"
 import { AuthContext } from "../helpers/AuthContext"
+import API  from '../services/api'
 
 
 function CreateEvent() {
@@ -116,7 +117,7 @@ const validationSchema = Yup.object().shape({
       }
 
       // Create the event with FormData
-      const response = await axios.post("https://ai-powered-event-production.up.railway.app/events", formData, {
+      const response = await API.post("https://ai-powered-event-production.up.railway.app/events", formData, {
         headers: { 
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'multipart/form-data'
@@ -126,7 +127,7 @@ const validationSchema = Yup.object().shape({
       const eventId = response.data.id
 
       // Create notification for all users
-      await axios.post(
+      await API.post(
         "https://ai-powered-event-production.up.railway.app/notifications",
         {
           message: `New event created: ${data.title}`,

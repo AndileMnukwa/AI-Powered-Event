@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../helpers/AuthContext';
 import { format } from 'date-fns';
+import API  from '../services/api';
 
 export default function MyRegistrations() {
   const [registrations, setRegistrations] = useState([]);
@@ -27,7 +28,7 @@ export default function MyRegistrations() {
     const fetchRegistrations = async () => {
       setLoading(true);
       try {
-        const response = await axios.get('https://ai-powered-event-production.up.railway.app/registrations/user/me', {
+        const response = await API.get('https://ai-powered-event-production.up.railway.app/registrations/user/me', {
           headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` }
         });
         

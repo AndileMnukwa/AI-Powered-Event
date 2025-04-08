@@ -18,7 +18,7 @@ const AdminNotificationIcon = () => {
         const token = localStorage.getItem("accessToken");
         if (!token) return;
     
-        const response = await fetch("http://localhost:3001/notifications/admin", {
+        const response = await fetch("https://ai-powered-event-production.up.railway.app/notifications/admin", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -42,7 +42,7 @@ const AdminNotificationIcon = () => {
 
   // Socket.IO setup
   useEffect(() => {
-    socketRef.current = io("http://localhost:3001", {
+    socketRef.current = io("https://ai-powered-event-production.up.railway.app/", {
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
@@ -163,7 +163,7 @@ const AdminNotificationIcon = () => {
     try {
       const token = localStorage.getItem("accessToken");
       const response = await fetch(
-        `http://localhost:3001/notifications/admin/${notificationId}/read`,
+        `https://ai-powered-event-production.up.railway.app/notifications/admin/${notificationId}/read`,
         {
           method: "PUT",
           headers: {
@@ -187,7 +187,7 @@ const AdminNotificationIcon = () => {
     try {
       const token = localStorage.getItem("accessToken");
       const response = await fetch(
-        "http://localhost:3001/notifications/admin/read-all",
+        "https://ai-powered-event-production.up.railway.app/notifications/admin/read-all",
         {
           method: "PUT",
           headers: {
