@@ -35,7 +35,7 @@ const UserNotificationIcon = () => {
         const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) return;
 
-        const response = await fetch("http://localhost:3001/notifications", {
+        const response = await fetch("ai-powered-event-production.up.railway.app/notifications", {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
 
@@ -61,7 +61,7 @@ const UserNotificationIcon = () => {
 
     fetchUserNotifications();
 
-    socketRef.current = io("http://localhost:3001");
+    socketRef.current = io("ai-powered-event-production.up.railway.app");
 
     socketRef.current.on("connect", () => {
       const accessToken = localStorage.getItem("accessToken");
@@ -90,7 +90,7 @@ const UserNotificationIcon = () => {
   const markUserNotificationAsRead = async (notification) => {
     try {
       const accessToken = localStorage.getItem("accessToken");
-      const response = await fetch(`http://localhost:3001/notifications/${notification.id}/read`, {
+      const response = await fetch(`ai-powered-event-production.up.railway.app/notifications/${notification.id}/read`, {
         method: "PUT",
         headers: { Authorization: `Bearer ${accessToken}` },
       });
@@ -114,7 +114,7 @@ const UserNotificationIcon = () => {
   const markAllAsRead = async () => {
     try {
       const accessToken = localStorage.getItem("accessToken");
-      const response = await fetch(`http://localhost:3001/notifications/read-all`, {
+      const response = await fetch(`ai-powered-event-production.up.railway.app/notifications/read-all`, {
         method: "PUT",
         headers: { Authorization: `Bearer ${accessToken}` },
       });

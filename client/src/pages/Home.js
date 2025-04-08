@@ -77,7 +77,7 @@ export default function Home() {
       navigate("/login");
     } else {
       axios
-        .get("http://localhost:3001/events")
+        .get("ai-powered-event-production.up.railway.app/events")
         .then((response) => {
           setListOfEvents(response.data);
           setLoading(false);
@@ -115,11 +115,11 @@ export default function Home() {
     
     // If the path begins with "/uploads/events/", ensure it's properly formed
     if (imagePath.startsWith('/uploads/events/')) {
-      return `http://localhost:3001${imagePath}`;
+      return `ai-powered-event-production.up.railway.app${imagePath}`;
     }
     
     // For any other case, just append the path to the base URL
-    return `http://localhost:3001/${imagePath}`;
+    return `ai-powered-event-production.up.railway.app/${imagePath}`;
   };
 
   const scrollToTop = () => {

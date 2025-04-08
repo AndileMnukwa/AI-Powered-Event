@@ -62,7 +62,7 @@ function App() {
     }
 
     axios
-      .get("http://localhost:3001/auth/auth", {
+      .get("ai-powered-event-production.up.railway.app/auth/auth", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => {
@@ -103,7 +103,7 @@ function App() {
         return;
       }
 
-      const response = await axios.delete(`http://localhost:3001/events/${eventId}`, {
+      const response = await axios.delete(`ai-powered-event-production.up.railway.app/events/${eventId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
