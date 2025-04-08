@@ -22,6 +22,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: false,
     },
+  }, 
+  {
+    tableName: 'notifications', // <-- Add this line
+    timestamps: true // Keep this if you had it before, or add if needed
   });
 
   Notifications.associate = (models) => {

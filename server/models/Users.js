@@ -22,6 +22,10 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.DATE,
             allowNull: true,
         }
+    },
+    {
+        tableName: 'Users', // <-- Add this line
+        timestamps: true // Keep this if you had it before, or add if needed
     });
 
     Users.associate = (models) => {

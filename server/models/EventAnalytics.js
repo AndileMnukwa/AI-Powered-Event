@@ -89,6 +89,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         defaultValue: 0
       }
+    },
+    {
+      tableName: 'eventanalytics', 
+      timestamps: true 
     });
   
     EventAnalytics.associate = (models) => {

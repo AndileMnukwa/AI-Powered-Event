@@ -28,7 +28,11 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.TEXT,
             allowNull: true, 
         }
-    }, { timestamps: true });
+    }, 
+    {
+        tableName: 'reviews', // <-- Add this line
+        timestamps: true // Keep this if you had it before, or add if needed
+      });
 
     Reviews.associate = (models) => {
         Reviews.belongsTo(models.Events, {

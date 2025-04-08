@@ -80,6 +80,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.DATE,
         allowNull: true,
       },
+    },
+    {
+      tableName: 'registrations', // <-- Add this line
+      timestamps: true // Keep this if you had it before, or add if needed
     });
   
     // Define associations
