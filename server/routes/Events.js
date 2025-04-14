@@ -1,10 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const { Events, Reviews } = require("../models");
+const { Events, Reviews, Users } = require("../models"); // Ensure Users model is imported if needed elsewhere, added it just in case
 const { validateToken } = require("../middlewares/AuthMiddleware");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const { Op } = require("sequelize"); // Import Op for potential future use if needed
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -28,7 +29,7 @@ const upload = multer({
         const fileTypes = /jpeg|jpg|png|gif/;
         const mimetype = fileTypes.test(file.mimetype);
         const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
-        
+
         if (mimetype && extname) {
             return cb(null, true);
         }
@@ -36,38 +37,77 @@ const upload = multer({
     }
 });
 
-// Fetch all events
+// --- MODIFIED ROUTE: Fetch all events WITH review stats ---
 router.get("/", async (req, res) => {
     try {
-        const events = await Events.findAll();
-        res.json(events);
+        const events = await Events.findAll({
+            include: [{
+                model: Reviews,
+                attributes: ['rating', 'sentiment'] // Only fetch necessary review attributes
+            }],
+             order: [['date', 'DESC']] // Optional: Order events if needed
+        });
+
+        // Process events to add calculated review statistics
+        const enhancedEvents = events.map(event => {
+            const plainEvent = event.toJSON(); // Convert to plain object to add properties
+            const reviews = plainEvent.Reviews || []; // Access included reviews
+
+            // Calculate reviewCount
+            plainEvent.reviewCount = reviews.length;
+
+            // Calculate avgRating
+            if (reviews.length > 0) {
+                const totalRating = reviews.reduce((sum, review) => sum + (review.rating || 0), 0);
+                plainEvent.avgRating = parseFloat((totalRating / reviews.length).toFixed(1));
+            } else {
+                plainEvent.avgRating = 0;
+            }
+
+            // Calculate sentimentScore (% positive)
+            if (reviews.length > 0) {
+                const positiveReviews = reviews.filter(review => review.sentiment === 'positive').length;
+                plainEvent.sentimentScore = Math.round((positiveReviews / reviews.length) * 100);
+            } else {
+                plainEvent.sentimentScore = 0;
+            }
+
+            // Remove the included Reviews array from the final output as it's not needed by AIReviewsPage list view
+            delete plainEvent.Reviews;
+
+            return plainEvent;
+        });
+
+        res.json(enhancedEvents); // Send the enhanced list
+
     } catch (error) {
-        console.error("Error fetching events:", error);
+        console.error("Error fetching events with review stats:", error);
         res.status(500).json({ error: "Failed to fetch events" });
     }
 });
+// --- END OF MODIFIED ROUTE ---
 
-// Create a new event (Requires Authentication)
+// Create a new event (Requires Authentication) - No changes needed
 router.post("/", validateToken, upload.single("image"), async (req, res) => {
     try {
         console.log("Received Event Data:", req.body); // Debugging
-        
-        const { 
-            title, 
-            location, 
-            description, 
-            date, 
-            time, 
-            category, 
-            isPaid, 
-            price, 
-            ticketsAvailable, 
-            registrationDeadline, 
-            maxRegistrations, 
+
+        const {
+            title,
+            location,
+            description,
+            date,
+            time,
+            category,
+            isPaid,
+            price,
+            ticketsAvailable,
+            registrationDeadline,
+            maxRegistrations,
             minRegistrations,
             status
         } = req.body;
-        
+
         // Validate required fields
         if (!title || !location || !description || !date || !time || !category) {
             return res.status(400).json({ error: "Missing required fields" });
@@ -81,8 +121,8 @@ router.post("/", validateToken, upload.single("image"), async (req, res) => {
             date,
             time,
             category,
-            username: req.user.username,
-            // Add paid event fields
+            username: req.user.username, // Use username from validated token
+            userId: req.user.id, // Store userId as well
             isPaid: isPaid === 'true' || isPaid === true,
             price: isPaid === 'true' || isPaid === true ? parseFloat(price) : 0,
             ticketsAvailable: parseInt(ticketsAvailable || 100),
@@ -106,7 +146,7 @@ router.post("/", validateToken, upload.single("image"), async (req, res) => {
     }
 });
 
-// Fetch specific event details and its reviews
+// Fetch specific event details and its reviews - No changes needed here for AIReviewsPage, but kept for individual event view
 router.get("/:eventId", async (req, res) => {
     try {
         const eventId = req.params.eventId;
@@ -116,11 +156,12 @@ router.get("/:eventId", async (req, res) => {
         }
 
         const event = await Events.findByPk(eventId, {
-            attributes: [
-                "id", "title", "location", "description", "date", "time", "category", 
-                "image", "username", "isPaid", "price", "ticketsAvailable", 
-                "registrationDeadline", "maxRegistrations", "minRegistrations", "status"
-            ],
+             // Include organizer details if needed
+             include: [{
+                model: Users,
+                as: 'organizer', // Use the alias defined in your Events model association
+                attributes: ['id', 'username'] // Select only necessary user fields
+             }]
         });
 
         if (!event) {
@@ -130,6 +171,7 @@ router.get("/:eventId", async (req, res) => {
         const reviews = await Reviews.findAll({
             where: { EventId: eventId },
             attributes: ["id", "review_text", "rating", "username", "createdAt", "sentiment", "admin_response"],
+            order: [['createdAt', 'DESC']] // Optional: Order reviews
         });
 
         res.json({ event, reviews });
@@ -139,7 +181,7 @@ router.get("/:eventId", async (req, res) => {
     }
 });
 
-// Update an event (Requires Authentication & Ownership)
+// Update an event (Requires Authentication & Ownership) - No changes needed
 router.put("/:eventId", validateToken, upload.single("image"), async (req, res) => {
     try {
         const eventId = req.params.eventId;
@@ -149,27 +191,29 @@ router.put("/:eventId", validateToken, upload.single("image"), async (req, res) 
             return res.status(404).json({ error: "Event not found" });
         }
 
-        // Ensure that only the event creator can update it
-        if (event.username !== req.user.username) {
-            return res.status(403).json({ error: "You are not authorized to update this event" });
+        // Ensure that only the event creator or an admin can update it
+        // Compare ID from token with userId associated with the event
+        if (event.userId !== req.user.id && !req.user.isAdmin) {
+             return res.status(403).json({ error: "You are not authorized to update this event" });
         }
 
-        const { 
-            title, 
-            location, 
-            description, 
-            date, 
-            time, 
+
+        const {
+            title,
+            location,
+            description,
+            date,
+            time,
             category,
-            isPaid, 
-            price, 
-            ticketsAvailable, 
-            registrationDeadline, 
-            maxRegistrations, 
+            isPaid,
+            price,
+            ticketsAvailable,
+            registrationDeadline,
+            maxRegistrations,
             minRegistrations,
             status
         } = req.body;
-        
+
         // Update event data
         const updateData = {
             title: title || event.title,
@@ -178,9 +222,8 @@ router.put("/:eventId", validateToken, upload.single("image"), async (req, res) 
             date: date || event.date,
             time: time || event.time,
             category: category || event.category,
-            // Update paid event fields
             isPaid: isPaid === 'true' || isPaid === true,
-            price: isPaid === 'true' || isPaid === true ? parseFloat(price) : 0,
+            price: isPaid === 'true' || isPaid === true ? parseFloat(price) : event.price, // Keep old price if isPaid not true
             ticketsAvailable: ticketsAvailable ? parseInt(ticketsAvailable) : event.ticketsAvailable,
             registrationDeadline: registrationDeadline || event.registrationDeadline,
             maxRegistrations: maxRegistrations ? parseInt(maxRegistrations) : event.maxRegistrations,
@@ -194,14 +237,19 @@ router.put("/:eventId", validateToken, upload.single("image"), async (req, res) 
             if (event.image) {
                 const oldImagePath = path.join(__dirname, '..', event.image);
                 if (fs.existsSync(oldImagePath)) {
-                    fs.unlinkSync(oldImagePath);
+                     try {
+                       fs.unlinkSync(oldImagePath);
+                     } catch (unlinkErr) {
+                       console.error("Error deleting old image:", unlinkErr);
+                       // Decide if you want to proceed even if old image deletion fails
+                     }
                 }
             }
             updateData.image = `/uploads/events/${req.file.filename}`;
         }
 
         await Events.update(updateData, { where: { id: eventId } });
-        
+
         const updatedEvent = await Events.findByPk(eventId);
         res.json(updatedEvent);
     } catch (error) {
@@ -210,7 +258,7 @@ router.put("/:eventId", validateToken, upload.single("image"), async (req, res) 
     }
 });
 
-// Delete an event (Requires Authentication & Ownership)
+// Delete an event (Requires Authentication & Ownership) - No changes needed
 router.delete("/:eventId", validateToken, async (req, res) => {
     try {
         const eventId = req.params.eventId;
@@ -220,16 +268,22 @@ router.delete("/:eventId", validateToken, async (req, res) => {
             return res.status(404).json({ error: "Event not found" });
         }
 
-        // Ensure that only the event creator can delete it
-        if (event.username !== req.user.username) {
+        // Ensure that only the event creator or an admin can delete it
+        if (event.userId !== req.user.id && !req.user.isAdmin) {
             return res.status(403).json({ error: "You are not authorized to delete this event" });
         }
+
 
         // Delete associated image if it exists
         if (event.image) {
             const imagePath = path.join(__dirname, '..', event.image);
             if (fs.existsSync(imagePath)) {
-                fs.unlinkSync(imagePath);
+                 try {
+                   fs.unlinkSync(imagePath);
+                 } catch (unlinkErr) {
+                   console.error("Error deleting event image:", unlinkErr);
+                   // Decide if you want to proceed even if image deletion fails
+                 }
             }
         }
 
@@ -241,11 +295,11 @@ router.delete("/:eventId", validateToken, async (req, res) => {
     }
 });
 
-// Serve static event images
+// Serve static event images - No changes needed
 router.get("/images/:filename", (req, res) => {
     const filename = req.params.filename;
     const imagePath = path.join(__dirname, "../uploads/events", filename);
-    
+
     if (fs.existsSync(imagePath)) {
         res.sendFile(imagePath);
     } else {
