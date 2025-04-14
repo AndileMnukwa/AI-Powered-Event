@@ -2,10 +2,13 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../helpers/AuthContext';
-import { FaCalendarAlt, FaImage, FaMapMarkerAlt, FaArrowLeft, 
-         FaSave, FaTimes, FaInfoCircle, FaCheck,
-         FaHeart, FaClock, FaTags, FaEdit, FaDollarSign,
-         FaTicketAlt, FaCalendarCheck, FaUsers, FaUserPlus } from 'react-icons/fa';
+import {
+  FaCalendarAlt, FaImage, FaMapMarkerAlt, FaArrowLeft,
+  FaSave, FaTimes, FaInfoCircle, FaCheck,
+  FaHeart, FaClock, FaTags, FaEdit, FaDollarSign,
+  FaTicketAlt, FaCalendarCheck, FaUsers, FaUserPlus
+} from 'react-icons/fa';
+import API from '../services/api';
 
 function EditEvent() {
   const { id } = useParams();
@@ -25,7 +28,7 @@ function EditEvent() {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
   const [currentImage, setCurrentImage] = useState('');
-  
+
   // New fields for paid events
   const [isPaid, setIsPaid] = useState(false);
   const [price, setPrice] = useState(0);
@@ -37,11 +40,11 @@ function EditEvent() {
 
   // Options for category dropdown
   const categoryOptions = [
-    'Conference', 'Workshop', 'Seminar', 'Networking', 
-    'Social Gathering', 'Corporate Event', 'Trade Show', 
+    'Conference', 'Workshop', 'Seminar', 'Networking',
+    'Social Gathering', 'Corporate Event', 'Trade Show',
     'Charity', 'Festival', 'Concert', 'Sports', 'Other'
   ];
-  
+
   // Options for status dropdown
   const statusOptions = [
     'active', 'cancelled', 'completed', 'draft'
@@ -69,9 +72,9 @@ function EditEvent() {
     const fetchEventData = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`https://ai-powered-event-production.up.railway.app/events/${id}`);
+        const response = await API.get(`https://ai-powered-event-production.up.railway.app/events/${id}`);
         const eventData = response.data.event;
-        
+
         if (!eventData) {
           setError('Event not found');
           return;
@@ -84,24 +87,24 @@ function EditEvent() {
         setDate(formatDateForInput(eventData.date));
         setTime(eventData.time);
         setCategory(eventData.category);
-        
+
         // Set fields for paid events
         setIsPaid(eventData.isPaid || false);
         setPrice(eventData.price || 0);
         setTicketsAvailable(eventData.ticketsAvailable || 100);
-        
+
         if (eventData.registrationDeadline) {
           setRegistrationDeadline(formatDateForInput(eventData.registrationDeadline));
         }
-        
+
         setMaxRegistrations(eventData.maxRegistrations || '');
         setMinRegistrations(eventData.minRegistrations || 1);
         setStatus(eventData.status || 'active');
-        
+
         if (eventData.image) {
           setCurrentImage(getImageUrl(eventData.image));
         }
-        
+
       } catch (err) {
         console.error('Error fetching event:', err);
         setError('Failed to load event data. Please try again.');
@@ -122,13 +125,13 @@ function EditEvent() {
   // Function to correct the image path
   const getImageUrl = (imagePath) => {
     if (!imagePath) return null;
-    
+
     if (imagePath.startsWith('http')) return imagePath;
-    
+
     if (imagePath.startsWith('/uploads/events/')) {
       return `https://ai-powered-event-production.up.railway.app${imagePath}`;
     }
-    
+
     return `https://ai-powered-event-production.up.railway.app/${imagePath}`;
   };
 
@@ -163,7 +166,7 @@ function EditEvent() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validate form
     const validationError = validateForm();
     if (validationError) {
@@ -177,7 +180,7 @@ function EditEvent() {
 
     try {
       const accessToken = localStorage.getItem('accessToken');
-      
+
       if (!accessToken) {
         setError('Authorization required. Please log in again.');
         setLoading(false);
@@ -193,28 +196,28 @@ function EditEvent() {
       formData.append('time', time);
       formData.append('category', category);
       formData.append('status', status);
-      
+
       // Add fields for paid events
       formData.append('isPaid', isPaid);
       formData.append('price', isPaid ? price : 0);
       formData.append('ticketsAvailable', ticketsAvailable);
-      
+
       if (registrationDeadline) {
         formData.append('registrationDeadline', registrationDeadline);
       }
-      
+
       if (maxRegistrations) {
         formData.append('maxRegistrations', maxRegistrations);
       }
-      
+
       formData.append('minRegistrations', minRegistrations);
-      
+
       if (imageFile) {
         formData.append('image', imageFile);
       }
 
       // Update event with form data
-      await axios.put(`https://ai-powered-event-production.up.railway.app/events/${id}`, formData, {
+      await API.put(`https://ai-powered-event-production.up.railway.app/events/${id}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${accessToken}`
@@ -222,15 +225,15 @@ function EditEvent() {
       });
 
       setSuccessMsg('Event updated successfully!');
-      
+
       // Scroll to top to show success message
       window.scrollTo(0, 0);
-      
+
       // Navigate back to event page after a short delay
       setTimeout(() => {
         navigate(`/event/${id}`);
       }, 2000);
-      
+
     } catch (err) {
       console.error('Error updating event:', err);
       const errorMessage = err.response?.data?.error || 'Failed to update event. Please try again.';
@@ -244,32 +247,32 @@ function EditEvent() {
   const cancelEdit = () => {
     navigate(`/event/${id}`);
   };
-  
+
   // Footer component
   const Footer = () => {
     const currentYear = new Date().getFullYear();
-    
+
     return (
-      <footer style={{ 
-        backgroundColor: colors.navy, 
-        color: colors.white, 
-        padding: "1.5rem", 
-        textAlign: "center", 
-        width: "100%", 
-        boxShadow: "0 -5px 10px rgba(0,0,0,0.05)" 
+      <footer style={{
+        backgroundColor: colors.navy,
+        color: colors.white,
+        padding: "1.5rem",
+        textAlign: "center",
+        width: "100%",
+        boxShadow: "0 -5px 10px rgba(0,0,0,0.05)"
       }}>
-        <div style={{ 
-          display: "flex", 
-          flexDirection: "column", 
-          alignItems: "center", 
-          justifyContent: "center", 
-          maxWidth: "800px", 
-          margin: "0 auto" 
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          maxWidth: "800px",
+          margin: "0 auto"
         }}>
-          <p style={{ 
-            margin: "0.5rem 0", 
-            fontWeight: "600", 
-            fontSize: "1rem" 
+          <p style={{
+            margin: "0.5rem 0",
+            fontWeight: "600",
+            fontSize: "1rem"
           }}>
             <FaHeart style={{ color: colors.coral, marginRight: "0.5rem" }} /> EventHub Community
           </p>
@@ -277,47 +280,47 @@ function EditEvent() {
             Connect with event organizers and attendees from around the world
           </p>
           <p style={{ margin: "0.5rem 0", fontSize: "0.9rem", color: colors.lightGray }}>
-            <button 
-              onClick={() => navigate("/terms")} 
+            <button
+              onClick={() => navigate("/terms")}
               style={{
-                color: colors.coral, 
-                textDecoration: "none", 
-                fontWeight: "500", 
+                color: colors.coral,
+                textDecoration: "none",
+                fontWeight: "500",
                 transition: "color 0.3s ease",
-                background: "none", 
-                border: "none", 
-                cursor: "pointer", 
+                background: "none",
+                border: "none",
+                cursor: "pointer",
                 padding: 0
               }}
             >
               Terms
             </button> •
-            <button 
-              onClick={() => navigate("/privacy")} 
+            <button
+              onClick={() => navigate("/privacy")}
               style={{
-                color: colors.coral, 
-                textDecoration: "none", 
-                fontWeight: "500", 
+                color: colors.coral,
+                textDecoration: "none",
+                fontWeight: "500",
                 transition: "color 0.3s ease",
-                background: "none", 
-                border: "none", 
-                cursor: "pointer", 
-                margin: "0 0.5rem", 
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                margin: "0 0.5rem",
                 padding: 0
               }}
             >
               Privacy
             </button> •
-            <button 
-              onClick={() => navigate("/support")} 
+            <button
+              onClick={() => navigate("/support")}
               style={{
-                color: colors.coral, 
-                textDecoration: "none", 
-                fontWeight: "500", 
+                color: colors.coral,
+                textDecoration: "none",
+                fontWeight: "500",
                 transition: "color 0.3s ease",
-                background: "none", 
-                border: "none", 
-                cursor: "pointer", 
+                background: "none",
+                border: "none",
+                cursor: "pointer",
                 padding: 0
               }}
             >
@@ -350,11 +353,11 @@ function EditEvent() {
             <FaEdit className="me-2" style={{ color: colors.coral }} />
             Edit Event
           </h2>
-          <button 
+          <button
             className="btn"
             onClick={cancelEdit}
-            style={{ 
-              backgroundColor: "transparent", 
+            style={{
+              backgroundColor: "transparent",
               borderColor: colors.navy,
               color: colors.navy
             }}
@@ -377,7 +380,7 @@ function EditEvent() {
             {successMsg}
           </div>
         )}
-        
+
         <div className="card shadow-sm mb-4">
           <div className="card-header" style={{ backgroundColor: colors.navy, color: "white" }}>
             <div className="d-flex align-items-center">
@@ -402,7 +405,7 @@ function EditEvent() {
                   style={{ borderColor: colors.gray }}
                 />
               </div>
-              
+
               {/* Location */}
               <div className="mb-3">
                 <label htmlFor="location" className="form-label" style={{ color: colors.navy, fontWeight: "500" }}>
@@ -419,7 +422,7 @@ function EditEvent() {
                   style={{ borderColor: colors.gray }}
                 />
               </div>
-              
+
               {/* Date and Time */}
               <div className="row mb-3">
                 <div className="col-md-6 mb-3 mb-md-0">
@@ -453,7 +456,7 @@ function EditEvent() {
                   />
                 </div>
               </div>
-              
+
               {/* Category */}
               <div className="mb-3">
                 <label htmlFor="category" className="form-label" style={{ color: colors.navy, fontWeight: "500" }}>
@@ -476,7 +479,7 @@ function EditEvent() {
                   ))}
                 </select>
               </div>
-              
+
               {/* Status */}
               <div className="mb-3">
                 <label htmlFor="status" className="form-label" style={{ color: colors.navy, fontWeight: "500" }}>
@@ -498,7 +501,7 @@ function EditEvent() {
                   ))}
                 </select>
               </div>
-              
+
               {/* Description */}
               <div className="mb-3">
                 <label htmlFor="description" className="form-label" style={{ color: colors.navy, fontWeight: "500" }}>
@@ -514,7 +517,7 @@ function EditEvent() {
                   style={{ borderColor: colors.gray }}
                 />
               </div>
-              
+
               {/* Paid Event Toggle */}
               <div className="mb-3">
                 <div className="form-check">
@@ -526,8 +529,8 @@ function EditEvent() {
                     onChange={(e) => setIsPaid(e.target.checked)}
                     style={{ cursor: "pointer" }}
                   />
-                  <label 
-                    className="form-check-label" 
+                  <label
+                    className="form-check-label"
                     htmlFor="isPaid"
                     style={{ color: colors.navy, fontWeight: "500", cursor: "pointer" }}
                   >
@@ -536,7 +539,7 @@ function EditEvent() {
                   </label>
                 </div>
               </div>
-              
+
               {/* Price - Show only if paid event is checked */}
               {isPaid && (
                 <div className="mb-3">
@@ -559,7 +562,7 @@ function EditEvent() {
                   </div>
                 </div>
               )}
-              
+
               {/* Ticket Information */}
               <div className="row mb-3">
                 <div className="col-md-6 mb-3 mb-md-0">
@@ -593,7 +596,7 @@ function EditEvent() {
                   />
                 </div>
               </div>
-              
+
               {/* Min and Max Registration */}
               <div className="row mb-3">
                 <div className="col-md-6 mb-3 mb-md-0">
@@ -628,7 +631,7 @@ function EditEvent() {
                   />
                 </div>
               </div>
-              
+
               {/* Image Upload */}
               <div className="mb-4">
                 <label htmlFor="image" className="form-label" style={{ color: colors.navy, fontWeight: "500" }}>
@@ -646,42 +649,42 @@ function EditEvent() {
                 <div className="form-text" style={{ color: colors.darkGray }}>
                   Upload a new image to replace the current one, or leave empty to keep existing image.
                 </div>
-                
+
                 {/* Image preview */}
                 <div className="mt-3 d-flex gap-3 flex-wrap">
                   {currentImage && !imagePreview && (
                     <div>
                       <p className="mb-2" style={{ color: colors.navy }}>Current Image:</p>
-                      <img 
-                        src={currentImage} 
-                        alt="Current event" 
-                        className="img-thumbnail" 
-                        style={{ maxHeight: "150px" }} 
+                      <img
+                        src={currentImage}
+                        alt="Current event"
+                        className="img-thumbnail"
+                        style={{ maxHeight: "150px" }}
                       />
                     </div>
                   )}
-                  
+
                   {imagePreview && (
                     <div>
                       <p className="mb-2" style={{ color: colors.navy }}>New Image:</p>
-                      <img 
-                        src={imagePreview} 
-                        alt="Preview" 
-                        className="img-thumbnail" 
-                        style={{ maxHeight: "150px" }} 
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="img-thumbnail"
+                        style={{ maxHeight: "150px" }}
                       />
                     </div>
                   )}
                 </div>
               </div>
-              
+
               {/* Submit and Cancel buttons */}
               <div className="d-flex justify-content-end gap-3 mt-4">
                 <button
                   type="button"
                   className="btn"
                   onClick={cancelEdit}
-                  style={{ 
+                  style={{
                     backgroundColor: colors.lightGray,
                     color: colors.navy
                   }}
@@ -692,7 +695,7 @@ function EditEvent() {
                   type="submit"
                   className="btn"
                   disabled={loading}
-                  style={{ 
+                  style={{
                     backgroundColor: colors.navy,
                     color: colors.white
                   }}
@@ -713,7 +716,7 @@ function EditEvent() {
           </div>
         </div>
       </div>
-      
+
       {/* Footer */}
       <Footer />
     </div>
