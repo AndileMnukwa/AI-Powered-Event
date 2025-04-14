@@ -5,6 +5,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom"; 
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FaUser, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import API from "../services/api";
 
 // Custom color scheme
 const colors = {
@@ -42,7 +43,7 @@ function Registration() {
       .max(15, "Username can't be more than 15 characters")
       .required("Username is required"),
     password: Yup.string()
-      .min(4, "Password must be at least 4 characters")
+      .min(8, "Password must be at least 4 characters")
       .max(20, "Password can't be more than 20 characters")
       .required("Password is required"),
   });
@@ -50,8 +51,8 @@ function Registration() {
   const onSubmit = (data, { setSubmitting, resetForm }) => {
     setMessage("");
 
-    axios
-      .post("http://localhost:3001/auth", data)
+    API
+      .post("https://ai-powered-event-production.up.railway.app/auth", data)
       .then((response) => {
         setMessage("Successfully registered!");
         setMessageType("success");
