@@ -15,11 +15,7 @@
     "dialect": "mysql"
   },
   "production": {
-    "username": "root",
-    "password": "NgigQWwhrHbmSExwaywBPkMWViapwhgW",
-    "database": "railway",
-    "host": "yamabiko.proxy.rlwy.net",
-    "port": 24337,
+    "use_env_variable": "mysql://root:%23Reeman%4096@localhost:3306/event_reviewdb",
     "dialect": "mysql"
   },
   "scripts": {

@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: vibecatcher-backend
+    env: node
+    buildCommand: cd server && npm install
+    startCommand: cd server && node index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        fromVariable: PORT
+      - key: DATABASE_URL
+        sync: false  # You'll set this in Render dashboard securely
+      - key: JWT_SECRET
+        sync: false
