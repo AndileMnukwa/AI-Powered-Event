@@ -34,9 +34,10 @@
     "sequelize": "^6.37.5",
     "sequelize-cli": "^6.6.2",
     "socket.io": "^4.8.1",
-    "stripe": "^17.7.0"
+    "stripe": "^17.7.0",
+    "validator": "13.7.0"
   },
   "engines": {
-    "node": "16.20.0"
+    "node": "16.x"
   }
 }
