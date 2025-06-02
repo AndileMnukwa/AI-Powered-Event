@@ -1,14 +1,15 @@
 // services/SentimentService.js
 const Sentiment = require('sentiment');
 const sentiment = new Sentiment();
-const OpenAI = require('openai');
+const { Configuration, OpenAIApi } = require("openai"); // Correct import for v3
 
 // Initialize OpenAI client if key is available
 let openai;
 if (process.env.OPENAI_API_KEY) {
-  openai = new OpenAI({
+  const configuration = new Configuration({
     apiKey: process.env.OPENAI_API_KEY,
   });
+  openai = new OpenAIApi(configuration);
 }
 
 // Basic sentiment analysis without external API
