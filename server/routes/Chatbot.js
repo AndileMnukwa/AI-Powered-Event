@@ -1,16 +1,16 @@
 const express = require("express");
 const router = express.Router();
-const Anthropic = require('@anthropic-ai/sdk'); // Use Anthropic SDK
+const OpenAI = require("openai"); // Use OpenAI SDK instead of Anthropic
 
-// Initialize Anthropic Client (ensure ANTHROPIC_API_KEY is in your .env or Railway variables)
-let anthropic;
-if (process.env.ANTHROPIC_API_KEY) {
-  anthropic = new Anthropic({
-    apiKey: process.env.ANTHROPIC_API_KEY,
+// Initialize OpenAI Client
+let openai;
+if (process.env.OPENAI_API_KEY) {
+  openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
   });
 } else {
-  console.error("ANTHROPIC_API_KEY environment variable not set!");
-  // Handle the error appropriately - maybe disable the chatbot endpoint
+  console.error("OPENAI_API_KEY environment variable not set!");
+  // Handle the error appropriately
 }
 
 // System prompt to guide the AI's persona and task
@@ -26,9 +26,9 @@ const handleChatRequest = async (req, res) => {
     'Access-Control-Allow-Origin': '*' // Keep CORS header
   });
 
-  // Check if Anthropic client is initialized
-  if (!anthropic) {
-      console.error("Anthropic client not initialized due to missing API key.");
+  // Check if OpenAI client is initialized
+  if (!openai) {
+      console.error("OpenAI client not initialized due to missing API key.");
       res.write(`data: ${JSON.stringify({ content: "Sorry, the chatbot is currently unavailable due to a configuration issue." })}\n\n`);
       res.write('data: [DONE]\n\n');
       res.end();
@@ -54,44 +54,44 @@ const handleChatRequest = async (req, res) => {
         throw new Error("Messages should be an array");
     }
 
-    // 2. Format messages for Claude Messages API
+    // 2. Format messages for OpenAI API
     const formattedMessages = messages
-      .filter(msg => msg.content && (msg.role === 'user' || msg.role === 'assistant')) // Ensure valid roles and content
+      .filter(msg => msg.content && (msg.role === 'user' || msg.role === 'assistant'))
       .map(msg => ({
-        role: msg.role, // Already 'user' or 'assistant'
+        role: msg.role,
         content: msg.content
       }));
-
-    // Ensure the last message is from the user
-    if (formattedMessages.length === 0 || formattedMessages[formattedMessages.length - 1].role !== 'user') {
-        console.warn("Chat history is empty or doesn't end with a user message.");
-        // Optionally send a default response or error via SSE
-         res.write(`data: ${JSON.stringify({ content: "Hmm, I need your message to respond." })}\n\n`);
-         res.write('data: [DONE]\n\n');
-         res.end();
-         return;
-    }
-
-    // 3. Call Anthropic Messages API with streaming
-    const stream = await anthropic.messages.create({
-      model: "claude-3-haiku-20240307", // Haiku is faster and cheaper, good for chat. Or use Sonnet.
-      max_tokens: 1024,
-      system: systemPrompt,
-      messages: formattedMessages,
-      stream: true,
+    
+    // Add system message at the beginning
+    formattedMessages.unshift({
+      role: "system",
+      content: systemPrompt
     });
 
-    // 4. Process the Anthropic stream and send chunks via SSE
-    for await (const event of stream) {
-      if (event.type === "content_block_delta" && event.delta?.type === "text_delta") {
-        const textChunk = event.delta.text;
-        if (textChunk) {
-          // Send chunk to client in the expected JSON format
-          // Make sure to stringify the object containing the content property
-          res.write(`data: ${JSON.stringify({ content: textChunk })}\n\n`);
-        }
+    // Ensure the last message is from the user
+    if (formattedMessages.length === 1 || formattedMessages[formattedMessages.length - 1].role !== 'user') {
+        console.warn("Chat history is empty or doesn't end with a user message.");
+        res.write(`data: ${JSON.stringify({ content: "Hmm, I need your message to respond." })}\n\n`);
+        res.write('data: [DONE]\n\n');
+        res.end();
+        return;
+    }
+
+    // 3. Call OpenAI API with streaming
+    const stream = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: formattedMessages,
+      stream: true,
+      max_tokens: 1024,
+    });
+
+    // 4. Process the OpenAI stream and send chunks via SSE
+    for await (const chunk of stream) {
+      if (chunk.choices[0]?.delta?.content) {
+        const textChunk = chunk.choices[0].delta.content;
+        // Send chunk to client in the expected JSON format
+        res.write(`data: ${JSON.stringify({ content: textChunk })}\n\n`);
       }
-      // Optional: Handle other event types like message_start, message_stop if needed
     }
 
     // 5. Signal end of stream
