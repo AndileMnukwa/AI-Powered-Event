@@ -27,7 +27,7 @@
     "natural": "^8.0.1",
     "nodemailer": "^6.10.0",
     "nodemon": "^3.1.9",
-    "openai": "^4.87.3",
+    "openai": "3.3.0",
     "pg": "^8.11.3",
     "pg-hstore": "^2.3.4",
     "sentiment": "^5.0.2",

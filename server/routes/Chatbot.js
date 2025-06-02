@@ -1,16 +1,16 @@
 const express = require("express");
 const router = express.Router();
-const OpenAI = require("openai"); // Use OpenAI SDK instead of Anthropic
+const { Configuration, OpenAIApi } = require("openai"); // OpenAI v3 format
 
-// Initialize OpenAI Client
+// Initialize OpenAI Client with v3 SDK
 let openai;
 if (process.env.OPENAI_API_KEY) {
-  openai = new OpenAI({
+  const configuration = new Configuration({
     apiKey: process.env.OPENAI_API_KEY,
   });
+  openai = new OpenAIApi(configuration);
 } else {
   console.error("OPENAI_API_KEY environment variable not set!");
-  // Handle the error appropriately
 }
 
 // System prompt to guide the AI's persona and task
@@ -23,35 +23,35 @@ const handleChatRequest = async (req, res) => {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
     'Connection': 'keep-alive',
-    'Access-Control-Allow-Origin': '*' // Keep CORS header
+    'Access-Control-Allow-Origin': '*'
   });
 
   // Check if OpenAI client is initialized
   if (!openai) {
-      console.error("OpenAI client not initialized due to missing API key.");
-      res.write(`data: ${JSON.stringify({ content: "Sorry, the chatbot is currently unavailable due to a configuration issue." })}\n\n`);
-      res.write('data: [DONE]\n\n');
-      res.end();
-      return;
+    console.error("OpenAI client not initialized due to missing API key.");
+    res.write(`data: ${JSON.stringify({ content: "Sorry, the chatbot is currently unavailable due to a configuration issue." })}\n\n`);
+    res.write('data: [DONE]\n\n');
+    res.end();
+    return;
   }
 
   try {
     // 1. Get message history from request
     let messages;
     if (req.method === 'GET' && req.query.messages) {
-        try {
-            messages = JSON.parse(req.query.messages);
-        } catch (e) {
-            throw new Error("Invalid messages format in query string");
-        }
+      try {
+        messages = JSON.parse(req.query.messages);
+      } catch (e) {
+        throw new Error("Invalid messages format in query string");
+      }
     } else if (req.method === 'POST' && req.body.messages) {
-        messages = req.body.messages;
+      messages = req.body.messages;
     } else {
-        throw new Error("No messages provided");
+      throw new Error("No messages provided");
     }
 
     if (!Array.isArray(messages)) {
-        throw new Error("Messages should be an array");
+      throw new Error("Messages should be an array");
     }
 
     // 2. Format messages for OpenAI API
@@ -70,41 +70,36 @@ const handleChatRequest = async (req, res) => {
 
     // Ensure the last message is from the user
     if (formattedMessages.length === 1 || formattedMessages[formattedMessages.length - 1].role !== 'user') {
-        console.warn("Chat history is empty or doesn't end with a user message.");
-        res.write(`data: ${JSON.stringify({ content: "Hmm, I need your message to respond." })}\n\n`);
-        res.write('data: [DONE]\n\n');
-        res.end();
-        return;
+      console.warn("Chat history is empty or doesn't end with a user message.");
+      res.write(`data: ${JSON.stringify({ content: "Hmm, I need your message to respond." })}\n\n`);
+      res.write('data: [DONE]\n\n');
+      res.end();
+      return;
     }
 
-    // 3. Call OpenAI API with streaming
-    const stream = await openai.chat.completions.create({
+    // 3. Call OpenAI API (v3 doesn't support streaming the same way)
+    const completion = await openai.createChatCompletion({
       model: "gpt-3.5-turbo",
       messages: formattedMessages,
-      stream: true,
       max_tokens: 1024,
     });
 
-    // 4. Process the OpenAI stream and send chunks via SSE
-    for await (const chunk of stream) {
-      if (chunk.choices[0]?.delta?.content) {
-        const textChunk = chunk.choices[0].delta.content;
-        // Send chunk to client in the expected JSON format
-        res.write(`data: ${JSON.stringify({ content: textChunk })}\n\n`);
-      }
-    }
-
-    // 5. Signal end of stream
+    // 4. Send the complete response since we can't stream with v3 easily
+    const responseText = completion.data.choices[0].message.content;
+    res.write(`data: ${JSON.stringify({ content: responseText })}\n\n`);
     res.write('data: [DONE]\n\n');
     res.end();
 
   } catch (error) {
     console.error("Error in chat endpoint:", error);
-    // Ensure headers are set before writing error (if not already sent)
     if (!res.headersSent) {
-        res.writeHead(500, { /* ... SSE headers ... */ });
+      res.writeHead(500, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'Access-Control-Allow-Origin': '*'
+      });
     }
-    // Send an error message via SSE
     res.write(`data: ${JSON.stringify({ content: "Sorry, I encountered an error. Please try again." })}\n\n`);
     res.write('data: [DONE]\n\n');
     res.end();
