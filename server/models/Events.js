@@ -60,15 +60,15 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
       defaultValue: 1,
     },
-      status: {
-        type: DataTypes.CHECK('active', 'cancelled', 'completed', 'draft'),
-        defaultValue: 'active',
-      }
-    }, // <-- Correctly close the configuration object here
-    {
-      tableName: 'events', // <-- Add this line
-      timestamps: true // Keep this if you had it before, or add if needed
-    });
+    status: {
+      type: DataTypes.ENUM('active', 'cancelled', 'completed', 'draft'),
+      defaultValue: 'draft',
+    }
+  }, // <-- Correctly close the configuration object here
+  {
+    tableName: 'events', // <-- Add this line
+    timestamps: true // Keep this if you had it before, or add if needed
+  });
 
   // Define associations
   Events.associate = (models) => {
