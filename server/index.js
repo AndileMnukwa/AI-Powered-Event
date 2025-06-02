@@ -13,7 +13,7 @@ app.use(express.json());
 // Define allowed origins: Your Vercel frontend URL and localhost for development
 const allowedOrigins = [
   process.env.FRONTEND_URL || "http://localhost:3000", // Get frontend URL from env var
-  'https://ai-powered-event.vercel.app/', // Vercel URL
+  'https://ai-powered-event.vercel.app', // Vercel URL
 ];
 
 app.use(cors({
@@ -161,3 +161,20 @@ if (process.env.NODE_ENV === 'development') {
     console.log(`PROD Server running on port ${PORT}`);
   });
 }
+
+// Test database connection
+db.sequelize.authenticate()
+  .then(() => {
+    console.log('✅ Connection to the database has been established successfully.');
+    
+    // Optional: Test a simple query
+    return db.sequelize.query('SELECT NOW()');
+  })
+  .then(([results]) => {
+    if (results && results[0]) {
+      console.log('📅 Current time from DB:', results[0].now);
+    }
+  })
+  .catch(err => {
+    console.error('❌ Unable to connect to the database:', err);
+  });

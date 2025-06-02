@@ -61,7 +61,7 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: 1,
     },
       status: {
-        type: DataTypes.ENUM('active', 'cancelled', 'completed', 'draft'),
+        type: DataTypes.CHECK('active', 'cancelled', 'completed', 'draft'),
         defaultValue: 'active',
       }
     }, // <-- Correctly close the configuration object here

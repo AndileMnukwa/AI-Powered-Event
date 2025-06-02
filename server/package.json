@@ -28,6 +28,8 @@
     "nodemailer": "^6.10.0",
     "nodemon": "^3.1.9",
     "openai": "^4.87.3",
+    "pg": "^8.11.3",
+    "pg-hstore": "^2.3.4",
     "sentiment": "^5.0.2",
     "sequelize": "^6.37.5",
     "sequelize-cli": "^6.6.2",

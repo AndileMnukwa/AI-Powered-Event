@@ -43,7 +43,7 @@ module.exports = {
     
     // Add status field
     await queryInterface.addColumn('Events', 'status', {
-      type: Sequelize.ENUM('active', 'cancelled', 'completed', 'draft'),
+      type: Sequelize.CHECK('active', 'cancelled', 'completed', 'draft'),
       defaultValue: 'active'
     });
 
