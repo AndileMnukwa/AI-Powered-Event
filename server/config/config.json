@@ -15,8 +15,14 @@
     "dialect": "mysql"
   },
   "production": {
-    "use_env_variable": "mysql://root:%23Reeman%4096@localhost:3306/event_reviewdb",
-    "dialect": "mysql"
+    "use_env_variable": "DATABASE_URL",
+    "dialect": "postgres",
+    "dialectOptions": {
+      "ssl": {
+        "require": true,
+        "rejectUnauthorized": false
+      }
+    }
   },
   "scripts": {
     "start": "node index.js",
