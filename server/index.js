@@ -145,29 +145,18 @@ app.get('/api/health', (req, res) => {
 
 
 // Database Sync and Server Start (Keep as is)
-if (process.env.NODE_ENV === 'development') {
-  db.sequelize.sync({ alter: false }).then(() => {
-    if (!db.EventAnalytics) {
-      console.warn("EventAnalytics model not found. Make sure to add it to your models.");
-    }
-    const port = process.env.PORT || 3001; // <-- Use 3001 for local dev maybe?
-    server.listen(port, () => { // <-- Use server.listen for socket.io
-      console.log(`DEV Server running on port ${port}`);
-    });
-  });
-} else {
-  const PORT = process.env.PORT || 3001; // Railway provides PORT
-  server.listen(PORT, () => { // <-- Use server.listen for socket.io
-    console.log(`PROD Server running on port ${PORT}`);
-  });
-}
+const PORT = process.env.PORT || 3001;
 
-// Test database connection
+// Move database connection test above server start
 db.sequelize.authenticate()
   .then(() => {
     console.log('✅ Connection to the database has been established successfully.');
     
-    // Optional: Test a simple query
+    // Start the server immediately after DB connection is verified
+    server.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+    
     return db.sequelize.query('SELECT NOW()');
   })
   .then(([results]) => {
@@ -177,4 +166,8 @@ db.sequelize.authenticate()
   })
   .catch(err => {
     console.error('❌ Unable to connect to the database:', err);
+    // Still try to start the server even if DB connection fails
+    server.listen(PORT, () => {
+      console.log(`Server running on port ${PORT} (without DB connection)`);
+    });
   });
