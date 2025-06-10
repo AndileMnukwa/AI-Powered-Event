@@ -49,3 +49,24 @@ exports.api = functions.https.onRequest(app);
 //   logger.info("Hello logs!", {structuredData: true});
 //   response.send("Hello from Firebase!");
 // });
+
+// Import the sentiment service
+const { analyzeSentiment } = require('./services/SentimentService');
+
+// Add a sentiment analysis endpoint
+app.post('/analyze-sentiment', async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text) {
+      return res.status(400).json({ error: 'Text is required' });
+    }
+    
+    const sentiment = await analyzeSentiment(text);
+    res.json({ sentiment });
+  } catch (error) {
+    console.error('Error analyzing sentiment:', error);
+    res.status(500).json({ error: 'Failed to analyze sentiment' });
+  }
+});
+
+process.env.OPENAI_API_KEY = functions.config().openai?.apikey;

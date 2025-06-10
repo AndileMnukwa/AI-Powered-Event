@@ -1,9 +1,14 @@
 // src/services/api.js
 import axios from 'axios';
 
+// Determine API base URL based on environment
+const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://us-central1-vibecatcher-xxxxx.cloudfunctions.net/api'
+  : 'http://localhost:5001/vibecatcher-xxxxx/us-central1/api';
+
 // Create axios instance with defaults
 const API = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'https://ai-powered-event-production.up.railway.app',
+  baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'
