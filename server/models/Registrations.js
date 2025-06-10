@@ -46,9 +46,12 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: DataTypes.NOW,
       },
       paymentStatus: {
-        type: DataTypes.ENUM('pending', 'completed', 'failed', 'refunded', 'free'),
+        type: DataTypes.STRING,
         allowNull: false,
         defaultValue: 'pending',
+        validate: {
+          isIn: [['pending', 'completed', 'failed', 'refunded', 'free']]
+        }
       },
       totalAmount: {
         type: DataTypes.DECIMAL(10, 2),

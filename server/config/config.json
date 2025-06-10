@@ -1,28 +1,16 @@
 {
   "development": {
-    "username": "root",
-    "password": "NgigQWwhrHbmSExwaywBPkMWViapwhgW",
-    "database": "railway",
-    "host": "yamabiko.proxy.rlwy.net",
-    "port": 24337,
-    "dialect": "mysql"
+    "dialect": "sqlite",
+    "storage": "./database.sqlite"
   },
   "test": {
-    "username": "root",
-    "password": null,
-    "database": "database_test",
-    "host": "127.0.0.1",
-    "dialect": "mysql"
+    "dialect": "sqlite",
+    "storage": "./database.test.sqlite"
   },
   "production": {
-    "use_env_variable": "DATABASE_URL",
-    "dialect": "postgres",
-    "dialectOptions": {
-      "ssl": {
-        "require": true,
-        "rejectUnauthorized": false
-      }
-    }
+    "dialect": "sqlite",
+    "storage": "./database.production.sqlite",
+    "logging": false
   },
   "scripts": {
     "start": "node index.js",

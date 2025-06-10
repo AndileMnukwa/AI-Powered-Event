@@ -4,6 +4,8 @@ const http = require("http");
 const socketIo = require("socket.io");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
+const fs = require('fs');
+const path = require('path');
 
 // Middleware
 const app = express();
@@ -143,6 +145,11 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'OK' });
 });
 
+// Ensure the directory for SQLite database exists
+const dbDir = path.resolve(__dirname, './');
+if (!fs.existsSync(dbDir)) {
+  fs.mkdirSync(dbDir, { recursive: true });
+}
 
 // Database Sync and Server Start (Keep as is)
 const PORT = process.env.PORT || 3001;

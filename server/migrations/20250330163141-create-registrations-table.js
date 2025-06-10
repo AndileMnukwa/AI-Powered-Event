@@ -52,7 +52,7 @@ module.exports = {
         defaultValue: Sequelize.NOW
       },
       paymentStatus: {
-        type: Sequelize.CHECK('pending', 'completed', 'failed', 'refunded', 'free'),
+        type: Sequelize.STRING('pending', 'completed', 'failed', 'refunded', 'free'),
         allowNull: false,
         defaultValue: 'pending'
       },
