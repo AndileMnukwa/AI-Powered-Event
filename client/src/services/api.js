@@ -1,24 +1,18 @@
 // src/services/api.js
 import axios from 'axios';
+import { getAuth } from 'firebase/auth';
 
-// Determine API base URL based on environment
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://us-central1-vibecatcher-xxxxx.cloudfunctions.net/api'
-  : 'http://localhost:5001/vibecatcher-xxxxx/us-central1/api';
-
-// Create axios instance with defaults
 const API = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  baseURL: process.env.NODE_ENV === 'production'
+    ? 'https://us-central1-vibecatcher-d1152.cloudfunctions.net/api'
+    : 'http://localhost:5001/vibecatcher-d1152/us-central1/api'
 });
 
-// Add auth token to requests if available
-API.interceptors.request.use(config => {
-  const token = localStorage.getItem('accessToken');
-  if (token) {
+// Add auth interceptor for Firebase
+API.interceptors.request.use(async (config) => {
+  const auth = getAuth();
+  if (auth.currentUser) {
+    const token = await auth.currentUser.getIdToken();
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;

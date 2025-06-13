@@ -31,6 +31,8 @@ app.get('/health', (req, res) => {
 // Import routes
 const eventsRoutes = require('./routes/Events');
 app.use('/events', eventsRoutes);
+const recommendationsRoutes = require('./routes/Recommendations');
+app.use('/recommendations', recommendationsRoutes);
 
 // TODO: Add other route imports
 
